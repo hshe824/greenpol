@@ -1,0 +1,52 @@
+                                                                                                                     
+######### things to do ##########
+note that the precision on these scans is not perfect, figure 
+out what precision is required, i think its coming from rounding errors and conversion between cts and degrees.
+
+find absolute position of encoder, right now there is no reference
+point
+
+code to keep telescope from pointing below horizon may need higher limit than 0
+
+it might be possible/better to combine the forward and backward passes into one block of code, use -1**i and a list for min/max az then do list[i % 2] or something like that (scan.py: linearScan() & horizontalScan())
+
+add elevation logic to not let azscan go below horizon, at some point
+
+you could define some function that sets the absolute zero at some random position, then always return to that position at the end of each session, that way when it turns on the next time the zero will always be the same, whereas now zero is wherever it happens to be positioned when it turns on
+
+figure out if there is a better way to convert az el coordinates outputted by ephem into degrees(planets.py)
+
+put in logic that allows for different scan times at each elevation(scan.py: azScan())
+
+
+forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
+
+Think about how best to display ouput, and what output we want to display (gui related)
+
+figure out how to better adjust layout, its weird right now (gui related)
+
+why does the output frame only put text in the middle....?? (gui.py)
+
+put in some logic to azScan to accept hours instead of seconds for tscan, maybe change the default to hours, then if input is less than one, have some logic to convert that to seconds, or maybe timdelta can just handle that. or have an option to do either and you have to specify at input, maybe a checkbox (scan.py, azScan)
+
+for azscan think about the best way to do input parameters for rotation, i.e. distance based on distance, time, or rotations, have each option as a button?
+
+you can now do different logic for PR command, right now its time based, it could also just be distance based (scan.py, azScan)
+
+#create an error message text box in gui, for things like elevation safety controls
+
+set speed/accelaration as a variable in gui, save parameters to file
+
+have an option to read in file with whatever parameters you want for specific scans
+
+have hardware safety parameters, stop, dont change el past a certain point
+
+galil commands that will never change (AC/DC) can be set at beginning of gui.py, rather than in each move function, so what is never going to change?
+
+converter.py is set up to write files every minute, logic will need to change if we want files more frequently
+
+I thought I fixed it so that stop function works for horizontal scan, but it still just stops the iteration its on then goes to the next iteration(scan.horizontalScan())
+
+put functionality in gui to plot data from files (and live for az/el data)
+
+put planets selection in drop down menu
