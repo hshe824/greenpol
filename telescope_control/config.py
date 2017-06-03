@@ -8,7 +8,7 @@ degtoctsEl = 4096./360.
     
 #azimuth scan settings
 global azSP 
-azSP = 10 * degtoctsAZ # az scan speed, 90 deg/sec
+azSP = 5 * degtoctsAZ # az scan speed, 90 deg/sec
 global azAC
 azAC = 180 * degtoctsAZ # acceleration 
 global azDC
@@ -16,7 +16,7 @@ azDC = azAC # deceleration
 
 #elevation settings
 global elevSP
-elevSP = 45 * degtoctsEl # x degrees/sec
+elevSP = 5 * degtoctsEl # x degrees/sec
 global elevAC
 elevAC = 360 * degtoctsAZ # acceleration 
 global elevDC
@@ -24,7 +24,7 @@ elevDC = elevAC # deceleration
 
 #azimuth move settings
 global azSPm 
-azSPm = 10 * degtoctsAZ # az scan speed, 90 deg/sec
+azSPm = 5 * degtoctsAZ # az scan speed, 90 deg/sec
 
 #gain and offset settings (ffset between encoder and beam)
 global azgain

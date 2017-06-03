@@ -50,3 +50,7 @@ I thought I fixed it so that stop function works for horizontal scan, but it sti
 put functionality in gui to plot data from files (and live for az/el data)
 
 put planets selection in drop down menu
+
+have a jog funcion - or in asScan have inf input
+
+be able to track az el points

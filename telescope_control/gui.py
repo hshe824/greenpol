@@ -1,12 +1,12 @@
 import scan
 import moveto
 import config
-#import connect
+import connect
 import sys
 sys.path.append('C:/Python27x86/lib/site-packages')
 sys.path.append('data_aquisition')
 import get_pointing as gp
-import plot
+#import plot
 import gclib
 import threading
 import time
@@ -18,18 +18,18 @@ from Tkinter import *    #this is for python 2.7
 import ttk               #this is for python 2.7
 
 
-#g = connect.g
-#c = g.GCommand
+g = connect.g
+c = g.GCommand
 
-#g2 = connect.g2
-#c2 = g2.GCommand
+g2 = connect.g2
+c2 = g2.GCommand
 
 degtoctsAZ = config.degtoctsAZ
 degtoctsEl = config.degtoctsEl
 
 #offset between galil and beam
-#offsetAz = gp.galilAzOffset 
-#offsetEl = gp.galilElOffset
+offsetAz = gp.galilAzOffset 
+offsetEl = gp.galilElOffset
 
 class interface:
 
@@ -309,6 +309,7 @@ class interface:
         self.alttxt = Text(outputframe2, height = 1, width = 15)
         self.alttxt.grid(row = 1, column = 1)
         
+        '''
         #galil output
         self.lazG = Label(outputframe2, text='az Galil')
         self.lazG.grid(row = 0, column = 2, sticky = W)
@@ -321,7 +322,7 @@ class interface:
 
         self.alttxtG = Text(outputframe2, height = 1, width = 15)
         self.alttxtG.grid(row = 1, column = 3)
-
+        '''
         #thread stuff
         #self.interval = interval
         thread = threading.Thread(target=self.moniter, args=())
@@ -541,6 +542,12 @@ class interface:
         print('stopping motion...')
         c('ST')
     
+    #def jog(self):
+    #c('SPA=' + str(config.azSP))
+    #c('ACA=' + str(config.azAC))
+    #c('DCA=' + str(config.azDC))
+    #c('JG')
+    #c('BGA')
 
 root = Tk()
 root.title("Telescope Control")

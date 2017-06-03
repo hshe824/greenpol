@@ -7,7 +7,7 @@ import time
 import sys
 sys.path.append('../')
 import config
-#import connect
+import connect
 
 '''
 conversions for angles, integer to degrees:
@@ -87,6 +87,11 @@ def getAzEl(eye):
 
 #this is the offset between the optical beam and the galil
 def offset(eye, c):
+	
+    # deg to ct conversion for each motor
+    degtoctsAZ = config.degtoctsAZ
+    degtoctsEl = config.degtoctsEl 
+	
     azGalil = (float(c('TPX')) / degtoctsAZ) % 360.                            
     elGalil = (float(c('TPY')) / degtoctsEl) % 360.
 
@@ -98,12 +103,12 @@ def offset(eye, c):
 
     return azOffset, elOffset
 
-#eye = getData.Eyeball()
-#c = connect.g.GCommand
-#global galilAzOffset
-#galilAzOffset = offset(eye,c)[0]
-#global galilElOffset
-#galilElOffset = offset(eye,c)[1]
+eye = getData.Eyeball()
+c = connect.g.GCommand
+global galilAzOffset
+galilAzOffset = offset(eye,c)[0]
+global galilElOffset
+galilElOffset = offset(eye,c)[1]
 	
 '''	
 if __name__=='__main__':

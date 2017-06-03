@@ -18,7 +18,7 @@ azoffset=0.0         #same
 
 def bcd_to_int(bcd_str):
 	string= ''
-	print(str(int(bcd_str[0:2],2)), str(int(bcd_str[2:6],2)), str(int(bcd_str[6:10],2)), str(int(bcd_str[10:14],2)), str(int(bcd_str[14:18],2)))
+	#print(str(int(bcd_str[0:2],2)), str(int(bcd_str[2:6],2)), str(int(bcd_str[6:10],2)), str(int(bcd_str[10:14],2)), str(int(bcd_str[14:18],2)))
 	return int(string.join([str(int(bcd_str[0:2],2)), str(int(bcd_str[2:6],2)), str(int(bcd_str[6:10],2)), str(int(bcd_str[10:14],2)), str(int(bcd_str[14:18],2))]))
 	
 def bin_to_int(bin_str):
@@ -88,8 +88,8 @@ if __name__=='__main__':
 		#print Data.getData()
 		time_b = time.time()
 		delta = time_b-time_a
-		if (delta>=5):
-		    print gpstime,az,el
+		#if (delta>=5):
+		#	print gpstime,az,el
 		if(delta>=int(write_time)): 
 		    fileStruct(Data.getData(), Data)
 		    time_a=time.time()
