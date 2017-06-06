@@ -25,15 +25,14 @@ def open_folder(month,day,year):
     date=date_conv(month,day,year)
     
     #change the basic path "C:/Python27/deepspace/" to whatever you need            
-    os.chdir("C:/Users/labuser/Desktop/telescope_control/data_aquisition/data/"+date[0]+"-"+date[1]+"-"+date[2])
+    #os.chdir("C:/Users/labuser/Desktop/telescope_control/data_aquisition/data/"+date[0]+"-"+date[1]+"-"+date[2])
+    os.chdir("D:/software_git_repos/greenpol/telescope_control/"+date[0]+"-"+date[1]+"-"+date[2])
              
 ##select a staring-time and an ending-time, it returns hdf5 files in between
-def select_file(st_hour,st_minute,ed_hour,ed_minute):
+def select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute):
     
-    #searching all hdf5 files under selected path
-    files=glob.glob('*.h5')
-
-    
+    #searching all hdf5 files under selected path 
+    files=glob.glob('%s-%s-%s/*.h5' % (month, day, year))
     all_fname=[]
 
     #extract filename without extension

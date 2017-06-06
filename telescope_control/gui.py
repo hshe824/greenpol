@@ -6,7 +6,7 @@ import sys
 sys.path.append('C:/Python27x86/lib/site-packages')
 sys.path.append('data_aquisition')
 import get_pointing as gp
-#import plot
+import plot
 import gclib
 import threading
 import time
@@ -57,10 +57,12 @@ class interface:
 
         self.l1 = Label(inputframe, text='Scan Time (seconds)')
         self.l1.grid(row = 0, column = 0, sticky=W)
+        self.l4 = Label(inputframe, text='("inf" for continuous scan)')
+        self.l4.grid(row = 1, column = 1, sticky=W)
         self.l2 = Label(inputframe, text='Iteration #')
-        self.l2.grid(row = 1, column = 0, sticky=W)
+        self.l2.grid(row = 2, column = 0, sticky=W)
         self.l3 = Label(inputframe, text='El Step Size (deg)')
-        self.l3.grid(row = 2, column = 0, sticky=W)
+        self.l3.grid(row = 3, column = 0, sticky=W)
         #self.l4 = Label(inputframe, text='Starting AZ (deg)')
         #self.l4.grid(row = 3, column = 0, sticky=W)
         #self.l5 = Label(inputframe, text='Starting EL (deg)')
@@ -68,16 +70,16 @@ class interface:
 
         #user input
         self.tscan = Entry(inputframe)
-        self.tscan.insert(END, '5.0')
+        self.tscan.insert(END, 'inf')
         self.tscan.grid(row = 0, column = 1)
 
         self.iterations = Entry(inputframe)
         self.iterations.insert(END, '2')
-        self.iterations.grid(row = 1, column = 1)
+        self.iterations.grid(row = 2, column = 1)
 
         self.deltaEl = Entry(inputframe)
         self.deltaEl.insert(END, '10.0')
-        self.deltaEl.grid(row = 2, column = 1)
+        self.deltaEl.grid(row = 3, column = 1)
 
         #self.az0 = Entry(inputframe)
         #self.az0.insert(END, '0.0')
@@ -308,7 +310,6 @@ class interface:
 
         self.alttxt = Text(outputframe2, height = 1, width = 15)
         self.alttxt.grid(row = 1, column = 1)
-        
         '''
         #galil output
         self.lazG = Label(outputframe2, text='az Galil')
@@ -328,11 +329,11 @@ class interface:
         thread = threading.Thread(target=self.moniter, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start() 
-        '''
-        thread = threading.Thread(target=self.moniterGalil, args=())
-        thread.daemon = True                            # Daemonize thread
-        thread.start() 
-        '''
+        
+        #thread = threading.Thread(target=self.moniterGalil, args=())
+        #thread.daemon = True                            # Daemonize thread
+        #thread.start() 
+        
 
         #plot data
         outputframe3 = Frame(outputframe)
@@ -343,14 +344,14 @@ class interface:
         self.scan.grid(row = 0, column = 0, sticky=W)
 
         self.var = Entry(outputframe3, width = 5)
-        self.var.insert(END, 'el')
+        self.var.insert(END, 'az')
         self.var.grid(row = 0, column = 1, sticky=W)
 
         self.l1 = Label(outputframe3, text='From')
         self.l1.grid(row = 0, column = 2, sticky=W)
 
         self.beg = Entry(outputframe3)
-        self.beg.insert(END, '2017-05-24-14-44')
+        self.beg.insert(END, '2017-06-03-00-00')
         self.beg.grid(row = 0, column = 3)
 
         self.l2 = Label(outputframe3, text='To')
@@ -363,7 +364,7 @@ class interface:
         self.l4.grid(row = 1, column = 5, sticky=W)
 
         self.end = Entry(outputframe3)
-        self.end.insert(END, '2017-05-24-14-44')
+        self.end.insert(END, 'now')
         self.end.grid(row = 0, column = 5)
 
         ############# stop frame ###############
@@ -376,8 +377,14 @@ class interface:
 
         self.quitButton = Button(mainFrame, text='Exit', command=master.quit)
         self.quitButton.pack(side=LEFT)
+
+        self.motorTxt = Text(mainFrame, height = 1, width = 3)
+        self.motorTxt.insert(END, 'ON')
+        self.motorTxt.pack(side=RIGHT)
         
-     
+        self.motorButton = Button(mainFrame, text='Motor ON/OFF', command=self.motor)
+        self.motorButton.pack(side=RIGHT)
+
     #keep this in case I want to compare encoder postion to galil position
     # i.e. moniter both at the same time
     def moniterGalil(self):
@@ -439,7 +446,11 @@ class interface:
         
     def scanAz(self):
 
-        tscan = float(self.tscan.get())
+        tscan = self.tscan.get()
+        if tscan == 'inf':
+            tscan = np.inf
+        else:
+            tscan = float(tscan)
         iterations = int(self.iterations.get())
         deltaEl = float(self.deltaEl.get())
 
@@ -506,9 +517,9 @@ class interface:
         end = self.end.get()
 
         date1 = beg.split('-')
-        year1 = int(date1[0])
-        month1 = int(date1[1])
-        day1 = int(date1[2])
+        year1 = date1[0]
+        month1 = date1[1]
+        day1 = date1[2]
         hour1 = int(date1[3])
         minute1 = int(date1[4])
 
@@ -519,12 +530,13 @@ class interface:
             end1 = end[1].split(':')
             end1[2] = str(round(float(end1[2])))
             end = end0+end1
+            date2 = end
+        else:
+            date2 = end.split('-')
 
-
-        date2 = end.split('-')
-        year2 = int(date2[0])
-        month2 = int(date2[1])
-        day2 = int(date2[2])
+        year2 = date2[0]
+        month2 = date2[1]
+        day2 = date2[2]
         hour2 = int(date2[3])
         minute2 = int(date2[4])
 
@@ -542,12 +554,26 @@ class interface:
         print('stopping motion...')
         c('ST')
     
-    #def jog(self):
-    #c('SPA=' + str(config.azSP))
-    #c('ACA=' + str(config.azAC))
-    #c('DCA=' + str(config.azDC))
-    #c('JG')
-    #c('BGA')
+    def motor(self):
+        status = str(self.motorTxt.get('1.0',END))
+        print len(status)
+        #print status[0], ',', status[1], ',', status[2]
+        on = status[:2]
+        off = status[:3]
+
+        #if its on, turn it off
+        if on == 'ON':
+            c('MO')
+            self.motorTxt.delete('1.0', END)
+            self.motorTxt.insert('1.0', 'OFF')
+            print 'motor off'
+
+        #if its off, turn it on
+        elif off == 'OFF':
+            c('SH')
+            self.motorTxt.delete('1.0', END)
+            self.motorTxt.insert('1.0', 'ON')  
+            print 'motor on' 
 
 root = Tk()
 root.title("Telescope Control")
