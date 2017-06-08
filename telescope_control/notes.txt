@@ -43,14 +43,17 @@ I thought I fixed it so that stop function works for horizontal scan, but it sti
 
 put planets selection in drop down menu
 
+make drop down menus for plot var and celestial objects to track
+
 ## more relavent:
-make a motor off button in gui ('MO')
 
 add ability to track around specific az/el input points, not just celestial object locations
 
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
 
-add science data to gui plot+output
+add science data to gui plot+output *************
 
-fix plot.py, also make it work with gps time rather then spreading evenly
+make plot.py work with gps time rather then spreading evenly
+
+make drop down menu for plotting variables and celestial objects to track

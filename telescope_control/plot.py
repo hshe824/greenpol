@@ -15,7 +15,7 @@ def conti_test(year,month,day,st_hour,st_minute,ed_hour,ed_minute):
     d_m=ed_minute-st_minute
     time_range=abs(d_h)*60+abs(d_m)+1
     
-    #open_folder(month,day,year)
+    open_folder(month,day,year)
     files=select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute)
 
     minute=[]
@@ -39,9 +39,8 @@ def conti_test(year,month,day,st_hour,st_minute,ed_hour,ed_minute):
 
 def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
     
-    #open_folder(month,day,year)
+    open_folder(month,day,year)
     files=select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute)
-
     m=conti_test(year,month,day,st_hour,st_minute,ed_hour,ed_minute)
     
     numb=len(files)
@@ -52,15 +51,16 @@ def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
     for fname in files:
         with h5.File(fname,'r') as f:
             var1 = f['data']['%s' % var]
+##            var1 = f['data']['%s' % var]
             #el=f['data']['el']
             #az=f['data']['az']
-            t=f['data']['gpstime']
+            #t=f['data']['gpstime']
             size=len(var1) 
 
 
         i+=1
-        #t=np.linspace(int(m[i-1]),1+int(m[i-1]),size)
-
+        t=np.linspace(int(m[i-1]),1+int(m[i-1]),size)
+        
 
         #el,=plt.plot(t,el,'b',label='el')
         #az,=plt.plot(t,az,'k',label='az')
@@ -71,8 +71,7 @@ def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
         plt.xlabel('Time(minute)')
         #plt.legend(handles=[el,az,rev])
     plt.show()
-
 '''
 if __name__=="__main__":
-    plot_h5('el',2017,05,24,14,44,14,44)
+    plot_h5('el',2017,04,20,15,42,17,20)
 '''

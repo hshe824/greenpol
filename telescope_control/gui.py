@@ -6,11 +6,11 @@ import sys
 sys.path.append('C:/Python27x86/lib/site-packages')
 sys.path.append('data_aquisition')
 import get_pointing as gp
-import plot
+import plot as plot
 import gclib
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 #from tkinter import ttk #this is for python 3
 #from tkinter import *   #this is for python 3
@@ -346,26 +346,37 @@ class interface:
         self.var = Entry(outputframe3, width = 5)
         self.var.insert(END, 'az')
         self.var.grid(row = 0, column = 1, sticky=W)
+	
+	self.l1 = Label(outputframe3, text='Date')
+	self.l1.grid(row = 0, column = 2, sticky =W)
+	
+	self.date = Entry(outputframe3, width = 10)
+	self.date.insert(END, '2017-06-03')
+	self.date.grid(row = 0, column = 3)
 
-        self.l1 = Label(outputframe3, text='From')
-        self.l1.grid(row = 0, column = 2, sticky=W)
-
-        self.beg = Entry(outputframe3)
-        self.beg.insert(END, '2017-06-03-00-00')
-        self.beg.grid(row = 0, column = 3)
-
-        self.l2 = Label(outputframe3, text='To')
+        self.l2 = Label(outputframe3, text='From')
         self.l2.grid(row = 0, column = 4, sticky=W)
 
-        self.l3 = Label(outputframe3, text='yyyy-mm-dd-hh-mm')
-        self.l3.grid(row = 1, column = 3, sticky=W)
+        self.beg = Entry(outputframe3, width = 5)
+        self.beg.insert(END, '00-00')
+        self.beg.grid(row = 0, column = 5)
 
-        self.l4 = Label(outputframe3, text='"now" for current time')
-        self.l4.grid(row = 1, column = 5, sticky=W)
+        self.l3 = Label(outputframe3, text='To')
+        self.l3.grid(row = 0, column = 6, sticky=W)
+	
+	self.end = Entry(outputframe3, width = 5)
+        self.end.insert(END, '23-59')
+        self.end.grid(row = 0, column = 7, sticky=W)
 
-        self.end = Entry(outputframe3)
-        self.end.insert(END, 'now')
-        self.end.grid(row = 0, column = 5)
+        self.l4 = Label(outputframe3, text='yyyy-mm-dd')
+        self.l4.grid(row = 1, column = 3, sticky=W)
+	
+	self.l5 = Label(outputframe3, text='hh-mm')
+        self.l5.grid(row = 1, column = 5, sticky=W)
+
+        self.l6 = Label(outputframe3, text='hh-mm')
+        self.l6.grid(row = 1, column =7, sticky=W)
+
 
         ############# stop frame ###############
         
@@ -513,16 +524,20 @@ class interface:
 
     def plot(self):
         var = self.var.get()
+	date = self.date.get()
         beg = self.beg.get()
         end = self.end.get()
+	
+	date = date.split('-')
+	year = date[0]
+	month = date[1]
+	day = date[2]
 
-        date1 = beg.split('-')
-        year1 = date1[0]
-        month1 = date1[1]
-        day1 = date1[2]
-        hour1 = int(date1[3])
-        minute1 = int(date1[4])
+        time1 = beg.split('-')
+        hour1 = int(time1[0])
+        minute1 = int(time1[1])
 
+        '''
         if end == 'now':
             end = str(datetime.utcnow())
             end = end.split()
@@ -533,12 +548,10 @@ class interface:
             date2 = end
         else:
             date2 = end.split('-')
-
-        year2 = date2[0]
-        month2 = date2[1]
-        day2 = date2[2]
-        hour2 = int(date2[3])
-        minute2 = int(date2[4])
+        '''
+	time2 = end.split('-')
+        hour2 = int(time2[0])
+        minute2 = int(time2[1])
 
         #thread = threading.Thread(target=plot.plot_h5, 
         #    args=(var, year1, month1, day1, hour1, minute1, hour2, minute2))
@@ -546,7 +559,7 @@ class interface:
         #thread.start()
 
         #make sure this doesnt stop other functions from working while plot is showing
-        plot.plot_h5(var, year1, month1, day1, hour1, minute1, hour2, minute2)
+        plot.plot_h5(var, year, month, day, hour1, minute1, hour2, minute2)
 
     #this does not currently work for horizontal scan, you have to keep pressing it
     
