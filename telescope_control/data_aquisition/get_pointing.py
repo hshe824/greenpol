@@ -33,7 +33,7 @@ def bin_to_int(bin_str):
 	return int(bin_str,2)
 
 def fileStruct(n_array, data):
-	
+	os.chdir("D:/software_git_repos/greenpol/telescope_control/")
 	t=dt.datetime.now()
 	date = t.strftime("%m-%d-%Y")
 	time = t.strftime("%H-%M-%S")
