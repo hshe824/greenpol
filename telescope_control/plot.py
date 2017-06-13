@@ -54,16 +54,19 @@ def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
 ##            var1 = f['data']['%s' % var]
             #el=f['data']['el']
             #az=f['data']['az']
-            #t=sorted(f['data']['gpstime'])
-            size=len(var1) 
+            t=f['data']['gpstime']
+            size=len(var1)
 	   # print min(t), max(t)
 
-        t=np.linspace(int(m[i-1]),1+int(m[i-1]),size)
+        #t=np.linspace(int(m[i-1]),1+int(m[i-1]),size)
         
 
         #el,=plt.plot(t,el,'b',label='el')
         #az,=plt.plot(t,az,'k',label='az')
         #rev,=plt.plot(t,rev,'r--',label='rev')
+	izero = np.where(t != 0)[0]
+	t = t[izero]
+	var1 = var1[izero]
 
 	plt.plot(t, var1, 'b-', linewidth = 2)
 	plt.ylabel('%s (deg)' % var)
