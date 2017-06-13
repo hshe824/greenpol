@@ -351,21 +351,21 @@ class interface:
 	self.l1.grid(row = 0, column = 2, sticky =W)
 	
 	self.date = Entry(outputframe3, width = 10)
-	self.date.insert(END, '2017-06-03')
+	self.date.insert(END, '2017-06-12')
 	self.date.grid(row = 0, column = 3)
 
         self.l2 = Label(outputframe3, text='From')
         self.l2.grid(row = 0, column = 4, sticky=W)
 
         self.beg = Entry(outputframe3, width = 5)
-        self.beg.insert(END, '00-00')
+        self.beg.insert(END, '21-57')
         self.beg.grid(row = 0, column = 5)
 
         self.l3 = Label(outputframe3, text='To')
         self.l3.grid(row = 0, column = 6, sticky=W)
 	
 	self.end = Entry(outputframe3, width = 5)
-        self.end.insert(END, '23-59')
+        self.end.insert(END, '22-07')
         self.end.grid(row = 0, column = 7, sticky=W)
 
         self.l4 = Label(outputframe3, text='yyyy-mm-dd')

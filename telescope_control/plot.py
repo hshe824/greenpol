@@ -13,7 +13,7 @@ def conti_test(year,month,day,st_hour,st_minute,ed_hour,ed_minute):
     
     d_h=ed_hour-st_hour
     d_m=ed_minute-st_minute
-    time_range=abs(d_h)*60+abs(d_m)+1
+    time_range=abs(d_h)*60+abs(d_m)
     
     open_folder(month,day,year)
     files=select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute)
@@ -21,15 +21,15 @@ def conti_test(year,month,day,st_hour,st_minute,ed_hour,ed_minute):
     minute=[]
     for i in range(len(files)):
         minute.append(int(files[i][0:2])*60+int(files[i][3:5]))
+	
+    print('# of files:',len(minute))
+    print('Time range:',time_range)
+	
     if len(minute)!=time_range:
-        print('# of files:',len(minute))
-        print('Time range:',time_range)
         print "Files are discontinuous"
 
         return minute
     else:
-        print('# of files:',len(minute))
-        print('Time range:',time_range)
         print 'Files are continuous'
         
         return minute
@@ -54,11 +54,10 @@ def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
 ##            var1 = f['data']['%s' % var]
             #el=f['data']['el']
             #az=f['data']['az']
-            #t=f['data']['gpstime']
+            #t=sorted(f['data']['gpstime'])
             size=len(var1) 
+	   # print min(t), max(t)
 
-
-        i+=1
         t=np.linspace(int(m[i-1]),1+int(m[i-1]),size)
         
 
@@ -66,9 +65,9 @@ def plot_h5(var, year, month, day,st_hour,st_minute,ed_hour,ed_minute):
         #az,=plt.plot(t,az,'k',label='az')
         #rev,=plt.plot(t,rev,'r--',label='rev')
 
-        plt.plot(t, var1, 'b-', linewidth = 2)
-        plt.ylabel('%s (deg)' % var)
-        plt.xlabel('Time(minute)')
+	plt.plot(t, var1, 'b-', linewidth = 2)
+	plt.ylabel('%s (deg)' % var)
+	plt.xlabel('gps time')
         #plt.legend(handles=[el,az,rev])
     plt.show()
 '''

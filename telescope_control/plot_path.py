@@ -48,7 +48,7 @@ def select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute):
     
     #search files between selected starting-time and ending-time
     for j in range(len(all_fname)):
-        if all_fname[j]>=star and all_fname[j]<=end:
+        if all_fname[j]>=star and all_fname[j]<end:
             sub_fname.append(files[j])
     return sub_fname
 
