@@ -31,7 +31,6 @@ put in some logic to azScan to accept hours instead of seconds for tscan, maybe 
 
 set speed/accelaration as a variable in gui, save parameters to file
 
-have an option to read in file with whatever parameters you want for specific scans
 
 have hardware safety parameters, stop, dont change el past a certain point
 
@@ -41,19 +40,16 @@ get_pointing.py is set up to write files every minute, logic will need to change
 
 I thought I fixed it so that stop function works for horizontal scan, but it still just stops the iteration its on then goes to the next iteration(scan.horizontalScan())
 
-put planets selection in drop down menu
-
-make drop down menus for plot var and celestial objects to track
 
 ## more relavent:
 
-add ability to track around specific az/el input points, not just celestial object locations
+add ability to track around specific ra/dec input points, not just celestial object locations
+add ability to give ra/dec coordinates of current az/el pointing
 
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
 
 add science data to gui plot+output *************
 
-make plot.py work with gps time rather then spreading evenly
 
-make drop down menu for plotting variables and celestial objects to track
+get pointing from realtime_gp not get_pointing.

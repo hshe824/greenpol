@@ -1,7 +1,7 @@
 #find coordinates of celestial bodies
 
 import sys
-sys.path.append('C:/users/labuser/anaconda/lib/site-packages')
+##sys.path.append('C:/users/labuser/anaconda/lib/site-packages')
 from datetime import datetime
 from astropy.coordinates import AltAz, Angle, EarthLocation, ICRS
 from astropy import units as u

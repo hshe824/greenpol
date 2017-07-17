@@ -167,13 +167,13 @@ def distance(az, el, c):
     Elev_0 = ((P1El / degtoctsEl) + offsetEl) % 360.
     print('AZ_0:', AZ_0, 'Elev_0:', Elev_0)
 
-
+    '''
     #keep telescope from pointing below horizon
     if ((Elev_0 + el) % 360.) < 0. or ((Elev_0 + el) % 360.) > 180.:
         print Elev_0, el, Elev_0 + el
         print('Warning, this elevation is below the horizon, your going to break the telescope...')
         return 
-
+    '''
     
     #make it rotate the short way round + keep it between 0 and 180
     if el > 180.:

@@ -1,26 +1,31 @@
-import scan
-import moveto
+#import scan
+#import moveto
 import config
 import connect
+import os
 import sys
-sys.path.append('C:/Python27x86/lib/site-packages')
+sys.path.append('../')
+sys.path.append('C:/Python27/Lib/site-packages/')
+#sys.path.append('C:/Python27x86/lib/site-packages')
 sys.path.append('data_aquisition')
 import get_pointing as gp
-import plot as plot
 import gclib
 import threading
 import time
+from time import strftime
+import pickle
 from datetime import datetime, timedelta
 import numpy as np
 #from tkinter import ttk #this is for python 3
 #from tkinter import *   #this is for python 3
 from Tkinter import *    #this is for python 2.7
-import ttk               #this is for python 2.7
-
-
+import ttk #this is for python 2.7
+import realtime_gp as rt
+import matplotlib.pyplot as plt
+from plot_path import *
 g = connect.g
 c = g.GCommand
-
+##
 g2 = connect.g2
 c2 = g2.GCommand
 
@@ -118,30 +123,35 @@ class interface:
         self.l5.grid(row = 4, column = 0, sticky=W)
 
         #user input
-        self.location_lin = Entry(inputframe)
+        self.location_lin = Entry(inputframe,width=10)
         self.location_lin.insert(END, 'UCSB')
-        self.location_lin.grid(row = 0, column = 1)
+        self.location_lin.grid(row = 0, column = 1,sticky=W)
 
-        self.cbody_lin = Entry(inputframe)
-        self.cbody_lin.insert(END, 'Neptune')
-        self.cbody_lin.grid(row = 1, column = 1)
-
-        self.numAzScans_lin = Entry(inputframe)
+        self.numAzScans_lin = Entry(inputframe,width=10)
         self.numAzScans_lin.insert(END, '2')
-        self.numAzScans_lin.grid(row = 2, column = 1)
+        self.numAzScans_lin.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_lin = Entry(inputframe)
+        self.MinAz_lin = Entry(inputframe,width=10)
         self.MinAz_lin.insert(END, '-10.0')
-        self.MinAz_lin.grid(row = 3, column = 1)
+        self.MinAz_lin.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_lin = Entry(inputframe)
+        self.MaxAz_lin = Entry(inputframe,width=10)
         self.MaxAz_lin.insert(END, '10.0')
-        self.MaxAz_lin.grid(row = 4, column = 1)
+        self.MaxAz_lin.grid(row = 4, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
             text='Start Scan', 
             command=self.linear)
         self.scan.pack(side=LEFT)
+        ##########linear tracking drop down#######
+        self.planets = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
+        self.cbody_lin=StringVar(inputframe)
+        self.cbody_lin.set(self.planets[0])
+        self.phouse=OptionMenu(inputframe,self.cbody_lin,*self.planets)
+  
+        self.phouse.grid(row = 1, column = 1,sticky=W)
+
+
 
         ###### horizontal scan ######
         page3 = Frame(nb2)
@@ -169,43 +179,46 @@ class interface:
         self.l8.grid(row = 7, column = 0, sticky=W)
 
         #user input
-        self.location_hor = Entry(inputframe)
+        self.location_hor = Entry(inputframe,width=10)
         self.location_hor.insert(END, 'UCSB')
-        self.location_hor.grid(row = 0, column = 1)
+        self.location_hor.grid(row = 0, column = 1,sticky=W)
 
-        self.cbody_hor = Entry(inputframe)
-        self.cbody_hor.insert(END, 'Neptune')
-        self.cbody_hor.grid(row = 1, column = 1)
-
-        self.numAzScans_hor = Entry(inputframe)
+        self.numAzScans_hor = Entry(inputframe,width=10)
         self.numAzScans_hor.insert(END, '2')
-        self.numAzScans_hor.grid(row = 2, column = 1)
+        self.numAzScans_hor.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_hor = Entry(inputframe)
+        self.MinAz_hor = Entry(inputframe,width=10)
         self.MinAz_hor.insert(END, '-10.0')
-        self.MinAz_hor.grid(row = 3, column = 1)
+        self.MinAz_hor.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_hor = Entry(inputframe)
+        self.MaxAz_hor = Entry(inputframe,width=10)
         self.MaxAz_hor.insert(END, '10.0')
-        self.MaxAz_hor.grid(row = 4, column = 1)
+        self.MaxAz_hor.grid(row = 4, column = 1,sticky=W)
 
-        self.MinEl = Entry(inputframe)
+        self.MinEl = Entry(inputframe,width=10)
         self.MinEl.insert(END, '-10.0')
-        self.MinEl.grid(row = 5, column = 1)
+        self.MinEl.grid(row = 5, column = 1,sticky=W)
 
-        self.MaxEl = Entry(inputframe)
+        self.MaxEl = Entry(inputframe,width=10)
         self.MaxEl.insert(END, '10.0')
-        self.MaxEl.grid(row = 6, column = 1)
+        self.MaxEl.grid(row = 6, column = 1,sticky=W)
 
-        self.stepSize = Entry(inputframe)
+        self.stepSize = Entry(inputframe,width=10)
         self.stepSize.insert(END, '10.0')
-        self.stepSize.grid(row = 7, column = 1)
+        self.stepSize.grid(row = 7, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
             text='Start Scan', 
             command=self.horizontal)
         self.scan.pack(side=LEFT)
-
+        
+        ##########horizontal tracking drop down#######
+        self.planets = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
+        self.cbody_hor=StringVar(inputframe)
+        self.cbody_hor.set(self.planets[0])
+        self.phouse=OptionMenu(inputframe,self.cbody_hor,*self.planets)
+  
+        self.phouse.grid(row = 1, column = 1,sticky=W)
 
         ####### move distance page #########
         movePage = Frame(nb)
@@ -246,7 +259,7 @@ class interface:
 
         ########## move to #############
 
-        labelto = Label(movetoFrame, text = 'Move to location')
+        labelto = Label(movetoFrame, text = 'Move to Location')
         labelto.pack()
 
         inputframe2 = Frame(movetoFrame)
@@ -333,50 +346,55 @@ class interface:
         #thread = threading.Thread(target=self.moniterGalil, args=())
         #thread.daemon = True                            # Daemonize thread
         #thread.start() 
-        
 
         #plot data
-        outputframe3 = Frame(outputframe)
-        outputframe3.pack()
 
-        self.scan = Button(outputframe3, 
+        self.outputframe3 = Frame(outputframe)
+        self.outputframe3.pack()
+
+        self.scan = Button(self.outputframe3, 
             text='Plot', command=self.plot)
         self.scan.grid(row = 0, column = 0, sticky=W)
 
-        self.var = Entry(outputframe3, width = 5)
-        self.var.insert(END, 'az')
-        self.var.grid(row = 0, column = 1, sticky=W)
-	
-	self.l1 = Label(outputframe3, text='Date')
-	self.l1.grid(row = 0, column = 2, sticky =W)
-	
-	self.date = Entry(outputframe3, width = 10)
-	self.date.insert(END, '2017-06-12')
-	self.date.grid(row = 0, column = 3)
 
-        self.l2 = Label(outputframe3, text='From')
+    
+        self.l1 = Label(self.outputframe3, text='Date')
+        self.l1.grid(row = 0, column = 2, sticky =W)
+    
+        self.date = Entry(self.outputframe3, width = 10)
+        self.date.insert(END, '2017-06-02')
+        self.date.grid(row = 0, column = 3)
+
+        self.l2 = Label(self.outputframe3, text='From')
         self.l2.grid(row = 0, column = 4, sticky=W)
 
-        self.beg = Entry(outputframe3, width = 5)
-        self.beg.insert(END, '21-57')
+        self.beg = Entry(self.outputframe3, width = 5)
+        self.beg.insert(END, '18-17')
         self.beg.grid(row = 0, column = 5)
 
-        self.l3 = Label(outputframe3, text='To')
+        self.l3 = Label(self.outputframe3, text='To')
         self.l3.grid(row = 0, column = 6, sticky=W)
-	
-	self.end = Entry(outputframe3, width = 5)
+    
+        self.end = Entry(self.outputframe3, width = 5)
         self.end.insert(END, '22-07')
         self.end.grid(row = 0, column = 7, sticky=W)
 
-        self.l4 = Label(outputframe3, text='yyyy-mm-dd')
+        self.l4 = Label(self.outputframe3, text='yyyy-mm-dd')
         self.l4.grid(row = 1, column = 3, sticky=W)
-	
-	self.l5 = Label(outputframe3, text='hh-mm')
+    
+        self.l5 = Label(self.outputframe3, text='HH-MM')
         self.l5.grid(row = 1, column = 5, sticky=W)
 
-        self.l6 = Label(outputframe3, text='hh-mm')
+        self.l6 = Label(self.outputframe3, text='HH-MM')
         self.l6.grid(row = 1, column =7, sticky=W)
 
+        ############# plot drop down menu ###############
+        #For Move Plot
+        self.choice1=['az','el','gpstime','sci_data'] 
+        self.bar1=StringVar()
+        self.bar1.set(self.choice1[0])
+        self.option1=OptionMenu(self.outputframe3,self.bar1,*self.choice1,command=self.update_ch)
+        self.option1.grid(row=0,column=1,sticky=W)     
 
         ############# stop frame ###############
         
@@ -395,6 +413,153 @@ class interface:
         
         self.motorButton = Button(mainFrame, text='Motor ON/OFF', command=self.motor)
         self.motorButton.pack(side=RIGHT)
+
+        ###########Record and Load Configuration###########
+
+        self.outputframe4 = Frame(outputframe)
+        self.outputframe4.pack()
+        self.backup_l = Entry(self.outputframe4, width=20)
+        self.backup_l.grid(row=1,column=2,sticky=W)
+        self.backup_l.insert(END,'Target Label')
+        self.date_l=Entry(self.outputframe4, width=20)
+        self.date_l.grid(row=1,column=1,sticky=W)
+        self.date_l.insert(END,'2017-06-28')
+##        self.backup_l.insert(END,'2017-06-26/00-00-00')
+##        self.l1 = Label(mainFrame, text='yyyy-mm-dd/HH-MM-SS')
+##        self.l1.pack(side=BOTTOM)
+        self.loadbutton = Button (self.outputframe4, text='Load', command=self.read_txt)
+        self.loadbutton.grid(row=1,column=0,sticky=W)
+        
+        self.backup_r = Entry(self.outputframe4, width=20)
+        self.backup_r.grid(row=0,column=1,sticky=W)
+        self.backup_r.insert(END,'Your Label')
+        self.recordbutton = Button (self.outputframe4, text='Record', command=self.write_txt)
+        self.recordbutton.grid(row=0,column=0,sticky=W)
+
+
+##                self.var.delete(0,'end')
+##                self.var.insert(END,self.choices[i])
+
+    def write_txt(self):
+        data={'Move Distance':{'az':self.az.get(),'el':self.el.get()},
+                   'Move to Location':{'az':self.az2.get(),'el':self.el2.get()},
+                   'Az Scan':{'Scan Time':self.tscan.get(),'Iteration #':
+                              self.iterations.get(),'El Step Size':self.deltaEl.get()},
+                   'Linear Scan':{'Location':self.location_lin.get(),
+                                  'Celestial Object':self.cbody_lin.get(),
+                                  'Az Scan #':self.numAzScans_lin.get(),
+                                  'Min Az':self.MinAz_lin.get(),
+                                  'Max Az':self.MaxAz_lin.get()},
+                   'Horizontal Scan':{'Location':self.location_hor.get(),
+                                      'Celestial Object':self.cbody_hor.get(),
+                                      'Az Scan #':self.numAzScans_hor.get(),
+                                      'Min Az':self.MinAz_hor.get(),
+                                      'Max Az':self.MaxAz_hor.get(),
+                                      'Min El':self.MinEl.get(),
+                                      'Max El':self.MaxEl.get(),
+                                      'Step Size':self.stepSize.get()}}
+        date = strftime("%Y-%m-%d")
+        time=strftime("%H-%M-%S")
+        fpath='c:/Users/shulin/greenpol/'
+        os.chdir(fpath)
+        fd="gui_config:"+date
+        if not os.path.exists(fd):#this is the first file being created for that time
+            os.makedirs(fd)
+        os.chdir(fpath+'/'+date)
+
+        fname=self.backup_r.get()
+
+        if os.path.isfile(fname+'.txt')==True:
+            print "LABEL EXISTS. Please change your label!"
+        else:
+            with open(fname+'.txt', 'w') as handle:
+                pickle.dump(data,handle)
+
+            print 'Recording a history config at '+ date+'/'+time +','+ 'naming: '+fname
+
+
+    def read_txt(self):
+        fname=self.backup_l.get()
+        fpath='c:/Users/shulin/greenpol/'
+        date=self.date_l.get()
+        os.chdir(fpath+'/'+date)
+
+        with open(fname+'.txt', 'r') as handle:
+            data=pickle.loads(handle.read())
+        print 'Loading a history config of: '+ date +','+ 'naming: '+ fname
+
+        ##Move Distance
+        self.az.delete(0,'end')
+        self.az.insert(END,data['Move Distance']['az'])
+        self.el.delete(0,'end')
+        self.el.insert(END,data['Move Distance']['el'])
+        
+        ##Move to Location
+        self.az2.delete(0,'end')
+        self.az2.insert(END,data['Move to Location']['az'])
+        self.el2.delete(0,'end')
+        self.el2.insert(END,data['Move to Location']['el'])
+
+        ##Az Scan
+        self.tscan.delete(0,'end')
+        self.tscan.insert(END,data['Az Scan']['Scan Time'])
+        self.iterations.delete(0,'end')
+        self.iterations.insert(END,data['Az Scan']['Iteration #'])
+        self.deltaEl.delete(0,'end')
+        self.deltaEl.insert(END,data['Az Scan']['El Step Size'])
+
+        ##Linear Scan
+        self.location_lin.delete(0,'end')
+        self.location_lin.insert(END,data['Linear Scan']['Location'])
+        self.cbody_lin.set(data['Linear Scan']['Celestial Object'])
+        self.numAzScans_lin.delete(0,'end')
+        self.numAzScans_lin.insert(END,data['Linear Scan']['Az Scan #'])
+        self.MinAz_lin.delete(0,'end')
+        self.MinAz_lin.insert(END,data['Linear Scan']['Min Az'])
+        self.MaxAz_lin.delete(0,'end')
+        self.MaxAz_lin.insert(END,data['Linear Scan']['Max Az'])
+
+        ##Horizontal Scan
+        self.location_hor.delete(0,'end')
+        self.location_hor.insert(END,data['Horizontal Scan']['Location'])
+        self.cbody_hor.set(data['Horizontal Scan']['Celestial Object'])
+        self.numAzScans_hor.delete(0,'end')
+        self.numAzScans_hor.insert(END,data['Horizontal Scan']['Az Scan #'])
+        self.MinAz_hor.delete(0,'end')
+        self.MinAz_hor.insert(END,data['Horizontal Scan']['Min Az'])
+        self.MaxAz_hor.delete(0,'end')
+        self.MaxAz_hor.insert(END,data['Horizontal Scan']['Max Az'])
+        self.MinEl.delete(0,'end')
+        self.MinEl.insert(END,data['Horizontal Scan']['Min El'])
+        self.MaxEl.delete(0,'end')
+        self.MaxEl.insert(END,data['Horizontal Scan']['Max El'])
+        self.stepSize.delete(0,'end')
+        self.stepSize.insert(END,data['Horizontal Scan']['Step Size'])
+        
+            
+    ####channel options for sci_data
+    def update_ch(self,value):
+        if value==self.choice1[3]:
+            self.choice2=['all','ch0','ch1','ch2','ch3','ch4','ch5','ch6','ch7'
+                          ,'ch8','ch9','ch10','ch11','ch12','ch13','ch14',
+                          'ch15']
+            self.bar2=StringVar()
+            self.bar2.set('ch0')
+            self.option2=OptionMenu(self.outputframe3,self.bar2,*self.choice2)
+            self.option2.grid(row=2,column=1,sticky=W)
+            self.choice3=['T','Q','U','PSD(T)','PSD(Q)','PSD(U)']
+            self.bar3=StringVar()
+            self.bar3.set('T')
+            self.option3=OptionMenu(self.outputframe3,self.bar3,*self.choice3)
+            self.option3.grid(row=1,column=1,sticky=W)
+
+            self.l5.grid_forget()
+            self.l6.grid_forget()
+        else:
+            self.option2.grid_forget()
+            self.option3.grid_forget()
+        
+
 
     #keep this in case I want to compare encoder postion to galil position
     # i.e. moniter both at the same time
@@ -421,7 +586,7 @@ class interface:
     
     def moniter(self):
     
-	write_time = 60
+        write_time = 60
         if len(sys.argv)==1: #this is the defualt no argument write time
             sys.argv.append(60) #this sets how long it takes to write a file
         #data = np.zeros(1000, dtype=[("first", np.int), ("second", np.int)])
@@ -523,43 +688,73 @@ class interface:
 
 
     def plot(self):
-        var = self.var.get()
-	date = self.date.get()
+        fpath='D:/software_git_repos/greenpol/telescope_control/'
+
+        var1 = self.bar1.get()
+        date = self.date.get()
         beg = self.beg.get()
         end = self.end.get()
-	
-	date = date.split('-')
-	year = date[0]
-	month = date[1]
-	day = date[2]
+    
+        date = date.split('-')
+        year = date[0]
+        month = date[1]
+        day = date[2]
+        yrmoday=year+month+day
 
         time1 = beg.split('-')
-        hour1 = int(time1[0])
-        minute1 = int(time1[1])
+        hour1 = str(time1[0])
+        minute1 = str(time1[1])
 
-        '''
-        if end == 'now':
-            end = str(datetime.utcnow())
-            end = end.split()
-            end0 = end[0].split('-')
-            end1 = end[1].split(':')
-            end1[2] = str(round(float(end1[2])))
-            end = end0+end1
-            date2 = end
+        time2 = end.split('-')
+        hour2 = str(time2[0])
+        minute2 = str(time2[1])
+
+        if var1 != 'sci_data':
+            y=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
+                                            hour2,minute2))[var1]
+            t=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
+                                            hour2,minute2))['gpstime']
+	    print'plotting science data'
+
+            display_pointing = rt.pointing_plot(var1,y,t)
+
         else:
-            date2 = end.split('-')
-        '''
-	time2 = end.split('-')
-        hour2 = int(time2[0])
-        minute2 = int(time2[1])
+            var2 = self.bar2.get()
+            var3 = self.bar3.get()
+            psd=['PSD(T)','PSD(Q)','PSD(U)']
+            parameter=['T','Q','U']
+            if var2=='all' and var3 in parameter:
+		print'plotting all in parameter'
+                rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+                                     st_hour=hour1,st_minute=minute1,
+                                     ed_hour=hour2,ed_minute=minute2)\
+		
+            if var2=='all' and var3 in psd:
+                indx=psd.index(var3)
+                var3=parameter[indx]
+		print'plotting all in psd'
+                rt.plotnow_psd_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+                                     st_hour=hour1,st_minute=minute1,
+                                     ed_hour=hour2,ed_minute=minute2)
+            if var2 != 'all' and var3 in psd:
+                indx=psd.index(var3)
+                var3=parameter[indx]
+		print'plotting channel in psd'
+                rt.plotnow_psd(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+                                     st_hour=hour1,st_minute=minute1,
+                                     ed_hour=hour2,ed_minute=minute2)
+		
+               
+            else:
+		print'plotting channel in parameter'
 
-        #thread = threading.Thread(target=plot.plot_h5, 
-        #    args=(var, year1, month1, day1, hour1, minute1, hour2, minute2))
-        #thread.daemon = True
-        #thread.start()
-
-        #make sure this doesnt stop other functions from working while plot is showing
-        plot.plot_h5(var, year, month, day, hour1, minute1, hour2, minute2)
+                rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+                                     st_hour=hour1,st_minute=minute1,
+                                     ed_hour=hour2,ed_minute=minute2)
+		
+                
+           # plt.plot(combdata[var1][var2][var3],label=ch+' '+ var3)
+            
 
     #this does not currently work for horizontal scan, you have to keep pressing it
     

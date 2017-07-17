@@ -1,16 +1,23 @@
 """
 set of scripts to run while taking data for first look analysis
-(run from main ground_cofe directory so paths work out right)
-"""
+(run from main ground_cofe directory so paths work out right"""
+import sys
+sys.path.append('../')
+sys.path.append('D:\software_git_repos\greenpol\telescope_control')
+sys.path.append('D:\software_git_repos\greenpol\cofe-python-analysis-tools-master\utils_meinhold')
+sys.path.append('D:\software_git_repos\greenpol\cofe-python-analysis-tools-master\utils_zonca')
 from glob import glob
 import os
 import matplotlib.pyplot as plt
-import cofe_util as cu
+#import cofe_util as cu
 import demod
 import h5py
 import cPickle
 import numpy as np
 from numpy.lib import recfunctions as recf
+import matplotlib.pyplot as plt
+from plot_path import *
+from prm_util import nps
 samprate=27.  #assumed spin rate of pol modulator for rough time estimation inside files
 
 def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,azel_era=3):
@@ -63,7 +70,7 @@ def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,az
         if stats.st_size<150000:
             print f,stats.st_size
         if stats.st_size > 150000:
-            print(f)
+            #print(f)
             h=h5py.File(f)
             hh=h['data']
             hpointing.append(hh[hh['gpstime']>=hh['gpstime'][0]])
@@ -98,16 +105,16 @@ def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,az
 
 
 def get_demodulated_data_from_list(filelist,freq=10,supply_index=True,phase_offset=0):
-    print(filelist)
+    #print(filelist)
     filelist.sort() #just in case
     
     dd=[]
     for f in filelist:
         #only use full size files
         stats=os.stat(f)
-        print(stats.st_size)
+        #print(stats.st_size)
         if stats.st_size == 10752000:
-            print f
+            #print f
             d=demod.demodulate_dat(f,freq,supply_index=True,phase_offset=phase_offset)
             #filename is start of data taking (I think) and we'll just add 1/samprate seconds per rev
             h=np.float64(f[-12:-10])
@@ -126,6 +133,7 @@ def get_demodulated_data_from_list(filelist,freq=10,supply_index=True,phase_offs
                 d=recf.append_fields(d,['year','month','day'],[y,mo,dy])
             d=recf.append_fields(d,'ut',ut)
             dd.append(d)
+    #print len(np.concatenate(dd))
     return np.concatenate(dd)
     
 def combine_cofe_h5_pointing(dd,h5pointing,outfile='combined_data.pkl'):
@@ -135,10 +143,10 @@ def combine_cofe_h5_pointing(dd,h5pointing,outfile='combined_data.pkl'):
     """
     paz=h5pointing['az'].copy()
     prev=h5pointing['gpstime'].copy()
-    print(prev[0])
+    #print(prev[0])
     #need to use only 24 bits for comparison with science data gpstime- probably a better way to do this, bitmasking?
     prev  &= 0x00ffffff
-    print(prev[0])
+    #print(prev[0])
     pazw=np.where(abs(np.diff(paz) + 359.5)  < 3)[0]   #find the wrapping points so we can unroll the az for interpolation
     for r in pazw:
         paz[r+1:]=paz[r+1:]+360.                   #unwrap az
@@ -174,24 +182,29 @@ def bin_to_az_el(indata,nazbins=360,nelbins=90,chan='ch3',cmode='T',revlimits=[0
     return outmap
 
 
-def plotnow(yrmoday,fpath='',chan='ch2',supply_index=False):
+def plotnow(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
     """
     function to automatically read last 2 science files and last few pointing
     files, combine and plot signal vs azimuth. yrmoday should be a string
     '20130502' fpath should point to the 
     spot where acq_tel and converter.py were run
     """
-    fld=glob(fpath+'data/'+yrmoday+'/*.dat')
-    fld.sort()
-    flp=glob(fpath+yrmoday[4:6]+'-'+yrmoday[6:8]+'-'+yrmoday[0:4]+'/*.h5')
-    flp.sort()
-    if len(flp)<5:
-        pp=get_h5_pointing(flp)
-    if len(flp)>4:
-        pp=get_h5_pointing(flp[-3:])
-    dd=get_demodulated_data_from_list(fld[-2:],supply_index=supply_index)
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1
+        flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+    #~ print('Number of h5:',len(flp))
+    #~ print('Initial h5:',flp[0][-11:][:5])
+    #~ print('Final h5:',flp[-1][-11:][:5])
+    #~ print('Number of dat:',len(fld))
+    #~ print('Initial dat:',fld[0][-12:][:4])
+    #~ print('Final dat:',fld[-1][-12:][:4])
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
     combined=combine_cofe_h5_pointing(dd,pp)
-    plt.plot(combined['az'],combined['sci_data'][chan]['T'],label=fld[-2][-12:-4]+' - '+fld[-1][-12:-4])
+    plt.plot(combined['az'],combined['sci_data'][chan][var],label=chan)
     plt.xlabel('Azimuth angle, degrees')
     plt.ylabel('Signal, V')
     plt.title(chan+' COFE data binned to azimuth, date: '+fld[-1][-21:-13])
@@ -200,7 +213,101 @@ def plotnow(yrmoday,fpath='',chan='ch2',supply_index=False):
     plt.show()
     return combined
 
-def plotrawnow(yrmoday,fpath='',chan='ch2',rstep=50,supply_index=False):
+def plotnow_all(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1
+        flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+    #~ print('Number of h5:',len(flp))
+    #~ print('Initial h5:',flp[0][-11:][:5])
+    #~ print('Final h5:',flp[-1][-11:][:5])
+    #~ print('Number of dat:',len(fld))
+    #~ print('Initial dat:',fld[0][-12:][:4])
+    #~ print('Final dat:',fld[-1][-12:][:4])
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
+    combined=combine_cofe_h5_pointing(dd,pp)
+
+    for c in range(16):
+        ch='ch%s' %str(c)
+        plt.plot(combined['az'],combined['sci_data'][ch][var],label=ch)
+    plt.xlabel('Azimuth angle, degrees')
+    plt.ylabel('Signal, V')
+    plt.title('All COFE data binned to azimuth, date: '+fld[-1][-21:-13])
+    plt.legend(bbox_to_anchor=(1,1),loc=2,borderaxespad=0)
+    plt.grid()
+    plt.show()
+    return combined
+
+def plotnow_psd(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+    """
+    function to automatically read last 2 science files and last few pointing
+    files, combine and plot signal vs azimuth. yrmoday should be a string
+    '20130502' fpath should point to the 
+    spot where acq_tel and converter.py were run
+    """
+    fs=30*256
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1
+        flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+#~ ##    print('Number of h5:',len(flp))
+    #~ print('Initial h5:',flp[0][-11:][:5])
+    #~ print('Final h5:',flp[-1][-11:][:5])
+#~ ##    print('Number of dat:',len(fld))
+    #~ print('Initial dat:',fld[0][-12:][:4])
+    #~ print('Final dat:',fld[-1][-12:][:4])
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
+    combined=combine_cofe_h5_pointing(dd,pp)
+    #plt.psd(combined['sci_data'][chan][var],Fs=fs)
+    
+    freqs,pxx=nps(combined['sci_data'][chan][var],Fs=fs)
+##    plt.ylabel('Power Spectral Density ' + var +r'$^2$/Hz')
+##    plt.show()
+##    freqs,pxx=nps(combined['sci_data'][chan][var],fsreturn freqs,pxx
+    plt.plot(freqs,pxx,label=chan)
+    plt.legend(bbox_to_anchor=(1,1),loc=2,borderaxespad=0)
+    plt.show()
+    return freqs,pxx
+
+
+
+def plotnow_psd_all(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1
+        flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+    #~ print('Number of h5:',len(flp))
+    #~ print('Initial h5:',flp[0][-11:][:5])
+    #~ print('Final h5:',flp[-1][-11:][:5])
+    #~ print('Number of dat:',len(fld))
+    #~ print('Initial dat:',fld[0][-12:][:4])
+    #~ print('Final dat:',fld[-1][-12:][:4])
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
+    combined=combine_cofe_h5_pointing(dd,pp)
+    fs=30*256
+    for c in range(16):
+        ch='ch%s' %str(c)
+        #plt.psd(combined['sci_data'][ch][var])
+        freqs,pxx=nps(combined['sci_data'][ch][var],Fs=fs)
+##    plt.ylabel('Power Spectral Density ' + var +r'$^2$/Hz')
+##    plt.show()
+##    freqs,pxx=nps(combined['sci_data'][chan][var],fsreturn freqs,pxx
+        plt.plot(freqs,pxx,label=ch)
+    plt.legend(bbox_to_anchor=(1,1),loc=2,borderaxespad=0)
+    plt.show()
+    return freqs,pxx
+        
+
+def plotrawnow(yrmoday,chan,var,path,rstep=50,supply_index=False):
     """
     function to automatically read last science file plot raw data vs encoder
     yrmoday should be a string '20130502' fpath should point to the 
@@ -215,7 +322,7 @@ def plotrawnow(yrmoday,fpath='',chan='ch2',rstep=50,supply_index=False):
         for i in range(0,np.shape(dr[chan])[0],rstep):
             plt.plot(dr[chan][i,:],label='rev '+str(i))
         plt.xlabel('encoder position')
-        plt.ylabel('Signal, V')
+        plt.ylabel('Signal V')
         plt.title(chan+' Raw data, every '+str(rstep) + ' revs, file: '+fld[-1])
         plt.legend()
         plt.grid()
@@ -283,3 +390,22 @@ def updatedata(cdata):
         cdata['pp']['rev']=np.concatenate([cdata['pp']['rev'],pp['rev']])
         cdata['lastpfile']=flp[-1]
     return cdata
+def pointing_plot(var,vector,gpstime):
+    plt.plot(gpstime,vector,label=str(var))
+    plt.xlabel('gpstime')
+    plt.ylabel(str(var))
+    plt.title(str(var)+' ' + 'vs. gpstime')
+    plt.legend()
+    plt.grid()
+    plt.show()
+if __name__=="__main__":
+    yrmoday='20170602'
+    fpath='D:/software_git_repos/greenpol/telescope_control/'
+    chan='ch2'
+    var='T'
+    freqs,pxx=plotnow_psd(fpath,yrmoday,chan,var,18,15,22,22)
+##    freqs=freqs[0:10],pxx=pxx[0:10]
+    print freqs,pxx
+    plt.plot(freqs,pxx,'bo')
+    plt.show()
+

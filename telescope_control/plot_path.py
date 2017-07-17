@@ -19,40 +19,43 @@ def time_conv(st_hour,st_minute,ed_hour,ed_minute):
             n[i]=n[i].zfill(2)
     return n
     
-##open folder of selected path
-def open_folder(month,day,year):
-
-    date=date_conv(month,day,year)
+             
+##select a staring-time and an ending-time, it returns dat files in between
+def select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
     
-    #change the basic path "C:/Python27/deepspace/" to whatever you need            
-    #os.chdir("C:/Users/labuser/Desktop/telescope_control/data_aquisition/data/"+date[0]+"-"+date[1]+"-"+date[2])
-    os.chdir("D:/software_git_repos/greenpol/telescope_control/"+date[0]+"-"+date[1]+"-"+date[2])
-    ##select a staring-time and an ending-time, it returns hdf5 files in between
-def select_file(month, day, year, st_hour,st_minute,ed_hour,ed_minute):
+    #searching all hdf5 files under selected path
+    all_fname=glob.glob(fpath+'data/'+yrmoday+'/*.dat')
+
+    ftime=time_conv(st_hour,st_minute,ed_hour,ed_minute)    
+    star=ftime[0]+ftime[1]
+    end=ftime[2]+ftime[3]
+
+
+    #search files between selected starting-time and ending-time
+    sub_fname=[ i for i in all_fname
+                if i[-12:][:4]>=star and i[-12:][:4]<=end]
+    return sub_fname
     
-    #searching all hdf5 files under selected path 
-    files=glob.glob('*.h5')
-    #files=glob.glob('%s-%s-%s/*.h5' % (month, day, year))
-    all_fname=[]
-
-    #extract filename without extension
-    for i in range(len(files)):
-        all_fname.append(os.path.splitext(files[i])[0])
-
+##select a staring-time and an ending-time, it returns h5 files in between
+def select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
+    
+    #searching all hdf5 files under selected path
+    all_fname=glob.glob(fpath+yrmoday[4:6]+'-'+yrmoday[6:8]+'-'+yrmoday[0:4]+'/*.h5')
+    
     ftime=time_conv(st_hour,st_minute,ed_hour,ed_minute)
-
-    sub_fname=[]
     
     star=ftime[0]+"-"+ftime[1]
     end=ftime[2]+"-"+ftime[3]
-    
-    #search files between selected starting-time and ending-time
-    for j in range(len(all_fname)):
-        if all_fname[j]>=star and all_fname[j]<end:
-            sub_fname.append(files[j])
+
+    sub_fname=[ i for i in all_fname
+                if i[-11:][:5]>=star and i[-11:][:5]<=end]
     return sub_fname
 
-###if __name__ == '__main__':
-##    open_folder(2017,04,20)
-##    files=select_file(00,00,23,59)
-##    print files
+if __name__=="__main__":
+    fpath='C:/Users/shulin/greenpol/'
+
+    yrmoday='20170602'
+    print len(select_dat(fpath,yrmoday,17,00,18,00))
+    print len(select_h5(fpath,yrmoday,17,00,18,00))
+
+

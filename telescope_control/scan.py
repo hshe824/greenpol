@@ -1,7 +1,7 @@
 #script for linear and horizontal scan patterns
 import config
 import moveto
-import planets
+#import planets
 import sys
 sys.path.append('C:/Python27x86/lib/site-packages')
 import gclib
