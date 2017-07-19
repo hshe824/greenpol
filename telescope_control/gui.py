@@ -24,18 +24,19 @@ import ttk #this is for python 2.7
 import realtime_gp as rt
 import matplotlib.pyplot as plt
 from plot_path import *
+
 g = connect.g
 c = g.GCommand
 ##
 g2 = connect.g2
 c2 = g2.GCommand
 
-degtoctsAZ = config.degtoctsAZ
-degtoctsEl = config.degtoctsEl
-
 #offset between galil and beam
 offsetAz = gp.galilAzOffset 
 offsetEl = gp.galilElOffset
+
+degtoctsAZ = config.degtoctsAZ
+degtoctsEl = config.degtoctsEl
 
 class interface:
 
@@ -715,7 +716,7 @@ class interface:
                                             hour2,minute2))[var1]
             t=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
                                             hour2,minute2))['gpstime']
-        print'plotting science data'
+	    print'plotting science data'
 
             display_pointing = rt.pointing_plot(var1,y,t)
 
@@ -725,34 +726,34 @@ class interface:
             psd=['PSD(T)','PSD(Q)','PSD(U)']
             parameter=['T','Q','U']
             if var2=='all' and var3 in parameter:
-        print'plotting all in parameter'
+		print'plotting all in parameter'
                 rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)\
-        
+		
             if var2=='all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-        print'plotting all in psd'
+		print'plotting all in psd'
                 rt.plotnow_psd_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
             if var2 != 'all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-        print'plotting channel in psd'
+		print'plotting channel in psd'
                 rt.plotnow_psd(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
-        
+		
                
             else:
-        print'plotting channel in parameter'
+		print'plotting channel in parameter'
 
                 rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
-        
+		
                 
            # plt.plot(combdata[var1][var2][var3],label=ch+' '+ var3)
             
