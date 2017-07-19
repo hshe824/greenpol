@@ -561,9 +561,12 @@ class interface:
             self.l5.grid_forget()
             self.l6.grid_forget()
         else:
-            self.option2.grid_forget()
-            self.option3.grid_forget()
-        
+            try:
+                self.option2.grid_forget()
+                self.option3.grid_forget()
+            except AttributeError:
+                pass
+            
 
     #tacking coordinate input        
     def update_cbody_lin(self,cbody):
