@@ -1,10 +1,10 @@
-import scan
-import moveto
+#import scan
+#import moveto
 import config
-import connect
+#import connect
 import os
 import sys
-#sys.path.append('C:/Users/labuser/Desktop/python_temp')
+sys.path.append('C:/Users/labuser/Desktop/python_temp')
 sys.path.append('../')
 sys.path.append('C:/Python27/Lib/site-packages/')
 #sys.path.append('C:/Python27x86/lib/site-packages')
@@ -24,7 +24,7 @@ import ttk #this is for python 2.7
 import realtime_gp as rt
 import matplotlib.pyplot as plt
 from plot_path import *
-
+'''
 g = connect.g
 c = g.GCommand
 ##
@@ -34,7 +34,7 @@ c2 = g2.GCommand
 #offset between galil and beam
 offsetAz = gp.galilAzOffset 
 offsetEl = gp.galilElOffset
-
+'''
 degtoctsAZ = config.degtoctsAZ
 degtoctsEl = config.degtoctsEl
 
@@ -107,120 +107,120 @@ class interface:
 
         ###### linear scan ######
         page2 = Frame(nb2)
-        inputframe = Frame(page2)
-        inputframe.pack(side=TOP)
+        self.inputframe2 = Frame(page2)
+        self.inputframe2.pack(side=TOP)
 
         buttonframe = Frame(page2)
         buttonframe.pack(side=BOTTOM)
 
-        self.l1 = Label(inputframe, text='Location')
+        self.l1 = Label(self.inputframe2, text='Location')
         self.l1.grid(row = 0, column = 0, sticky=W)
-        self.l2 = Label(inputframe, text='Celestial Object')
+        self.l2 = Label(self.inputframe2, text='Celestial Object')
         self.l2.grid(row = 1, column = 0, sticky=W)
-        self.l3 = Label(inputframe, text='Az Scan #')
+        self.l3 = Label(self.inputframe2, text='Az Scan #')
         self.l3.grid(row = 2, column = 0, sticky=W)
-        self.l4 = Label(inputframe, text='Min Az')
+        self.l4 = Label(self.inputframe2, text='Min Az')
         self.l4.grid(row = 3, column = 0, sticky=W)
-        self.l5 = Label(inputframe, text='Max AZ')
+        self.l5 = Label(self.inputframe2, text='Max AZ')
         self.l5.grid(row = 4, column = 0, sticky=W)
 
         #user input
-        self.location_lin = Entry(inputframe,width=10)
+        self.location_lin = Entry(self.inputframe2,width=10)
         self.location_lin.insert(END, 'UCSB')
         self.location_lin.grid(row = 0, column = 1,sticky=W)
 
-        self.numAzScans_lin = Entry(inputframe,width=10)
+        self.numAzScans_lin = Entry(self.inputframe2,width=10)
         self.numAzScans_lin.insert(END, '2')
         self.numAzScans_lin.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_lin = Entry(inputframe,width=10)
+        self.MinAz_lin = Entry(self.inputframe2,width=10)
         self.MinAz_lin.insert(END, '-10.0')
         self.MinAz_lin.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_lin = Entry(inputframe,width=10)
+        self.MaxAz_lin = Entry(self.inputframe2,width=10)
         self.MaxAz_lin.insert(END, '10.0')
         self.MaxAz_lin.grid(row = 4, column = 1,sticky=W)
+
+
+        ##########linear tracking drop down#######
+        self.planets = ['Sky-Coord','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
+        self.cbody_lin=StringVar(self.inputframe2)
+        self.cbody_lin.set(self.planets[1])
+        self.phouse=OptionMenu(self.inputframe2,self.cbody_lin,*self.planets,command=self.update_cbody_lin)
+        self.phouse.grid(row = 1, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
             text='Start Scan', 
             command=self.linear)
         self.scan.pack(side=LEFT)
-        ##########linear tracking drop down#######
-        self.planets = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
-        self.cbody_lin=StringVar(inputframe)
-        self.cbody_lin.set(self.planets[0])
-        self.phouse=OptionMenu(inputframe,self.cbody_lin,*self.planets)
-  
-        self.phouse.grid(row = 1, column = 1,sticky=W)
-
-
 
         ###### horizontal scan ######
         page3 = Frame(nb2)
-        inputframe = Frame(page3)
-        inputframe.pack(side=TOP)
+        self.inputframe3 = Frame(page3)
+        self.inputframe3.pack(side=TOP)
 
         buttonframe = Frame(page3)
         buttonframe.pack(side=BOTTOM)
 
-        self.l1 = Label(inputframe, text='Location')
+        self.l1 = Label(self.inputframe3, text='Location')
         self.l1.grid(row = 0, column = 0, sticky=W)
-        self.l2 = Label(inputframe, text='Celestial Object')
+        self.l2 = Label(self.inputframe3, text='Celestial Object')
         self.l2.grid(row = 1, column = 0, sticky=W)
-        self.l3 = Label(inputframe, text='Az Scan #')
+        self.l3 = Label(self.inputframe3, text='Az Scan #')
         self.l3.grid(row = 2, column = 0, sticky=W)
-        self.l4 = Label(inputframe, text='Min Az')
+        self.l4 = Label(self.inputframe3, text='Min Az')
         self.l4.grid(row = 3, column = 0, sticky=W)
-        self.l5 = Label(inputframe, text='Max AZ')
+        self.l5 = Label(self.inputframe3, text='Max AZ')
         self.l5.grid(row = 4, column = 0, sticky=W)
-        self.l6 = Label(inputframe, text='Min El')
+        self.l6 = Label(self.inputframe3, text='Min El')
         self.l6.grid(row = 5, column = 0, sticky=W)
-        self.l7 = Label(inputframe, text='Max El')
+        self.l7 = Label(self.inputframe3, text='Max El')
         self.l7.grid(row = 6, column = 0, sticky=W)
-        self.l8 = Label(inputframe, text='Step Size')
+        self.l8 = Label(self.inputframe3, text='Step Size')
         self.l8.grid(row = 7, column = 0, sticky=W)
 
         #user input
-        self.location_hor = Entry(inputframe,width=10)
+        self.location_hor = Entry(self.inputframe3,width=10)
         self.location_hor.insert(END, 'UCSB')
         self.location_hor.grid(row = 0, column = 1,sticky=W)
 
-        self.numAzScans_hor = Entry(inputframe,width=10)
+        self.numAzScans_hor = Entry(self.inputframe3,width=10)
         self.numAzScans_hor.insert(END, '2')
         self.numAzScans_hor.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_hor = Entry(inputframe,width=10)
+        self.MinAz_hor = Entry(self.inputframe3,width=10)
         self.MinAz_hor.insert(END, '-10.0')
         self.MinAz_hor.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_hor = Entry(inputframe,width=10)
+        self.MaxAz_hor = Entry(self.inputframe3,width=10)
         self.MaxAz_hor.insert(END, '10.0')
         self.MaxAz_hor.grid(row = 4, column = 1,sticky=W)
 
-        self.MinEl = Entry(inputframe,width=10)
+        self.MinEl = Entry(self.inputframe3,width=10)
         self.MinEl.insert(END, '-10.0')
         self.MinEl.grid(row = 5, column = 1,sticky=W)
 
-        self.MaxEl = Entry(inputframe,width=10)
+        self.MaxEl = Entry(self.inputframe3,width=10)
         self.MaxEl.insert(END, '10.0')
         self.MaxEl.grid(row = 6, column = 1,sticky=W)
 
-        self.stepSize = Entry(inputframe,width=10)
+        self.stepSize = Entry(self.inputframe3,width=10)
         self.stepSize.insert(END, '10.0')
         self.stepSize.grid(row = 7, column = 1,sticky=W)
+
+
+        
+        ##########horizontal tracking drop down#######
+        self.planets = ['Sky-Coord', 'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
+        self.cbody_hor=StringVar(self.inputframe3)
+        self.cbody_hor.set(self.planets[1])
+        self.phouse=OptionMenu(self.inputframe3,self.cbody_hor,*self.planets,command=self.update_cbody_hor)  
+        self.phouse.grid(row = 1, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
             text='Start Scan', 
             command=self.horizontal)
         self.scan.pack(side=LEFT)
-        
-        ##########horizontal tracking drop down#######
-        self.planets = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
-        self.cbody_hor=StringVar(inputframe)
-        self.cbody_hor.set(self.planets[0])
-        self.phouse=OptionMenu(inputframe,self.cbody_hor,*self.planets)
-  
-        self.phouse.grid(row = 1, column = 1,sticky=W)
 
         ####### move distance page #########
         movePage = Frame(nb)
@@ -264,31 +264,34 @@ class interface:
         labelto = Label(movetoFrame, text = 'Move to Location')
         labelto.pack()
 
-        inputframe2 = Frame(movetoFrame)
-        inputframe2.pack(side=TOP)
+        self.inputframe2 = Frame(movetoFrame)
+        self.inputframe2.pack(side=TOP)
 
-        buttonframe2 = Frame(movetoFrame)
-        buttonframe2.pack(side=BOTTOM)
+        self.buttonframe2 = Frame(movetoFrame)
+        self.buttonframe2.pack(side=BOTTOM)
 
-        self.l3 = Label(inputframe2, text='az')
-        self.l3.grid(row = 0, column = 0, sticky=W)
+        self.mtl1 = Label(self.inputframe2, text='az')
+        self.mtl1.grid(row = 0, column = 0, sticky=W)
 
-        self.l4 = Label(inputframe2, text='el')
-        self.l4.grid(row = 1, column = 0, sticky=W)
+        self.mtl2 = Label(self.inputframe2, text='el')
+        self.mtl2.grid(row = 1, column = 0, sticky=W)
 
         #user input
-        self.az2 = Entry(inputframe2)
+        self.az2 = Entry(self.inputframe2)
         self.az2.insert(END, '0.0')
         self.az2.grid(row = 0, column = 1)
 
-        self.el2 = Entry(inputframe2)
+        self.el2 = Entry(self.inputframe2)
         self.el2.insert(END, '0.0')
         self.el2.grid(row = 1, column = 1)
 
-        self.scan = Button(buttonframe2, 
+        self.scan = Button(self.buttonframe2, 
             text='Start Move', command=self.moveTo)
         self.scan.pack(side=LEFT)
 
+        #self.convert=Button(self.buttonframe2,
+        #                    text='radec/azel',command=self.update_moveto)
+        #self.convert.pack(side=RIGHT)
 
         ####### notebook layout #########
         nb.add(movePage, text='Move')
@@ -562,6 +565,42 @@ class interface:
             self.option3.grid_forget()
         
 
+    #tacking coordinate input        
+    def update_cbody_lin(self,cbody):
+        if cbody=='Sky-Coord':
+
+            self.cor1_lin=Entry(self.inputframe2,width=5)
+            self.cor1_lin.grid(row=1,column=3,sticky=W)
+            self.cor2_lin=Entry(self.inputframe2,width=5)
+            self.cor2_lin.grid(row=1,column=5,sticky=W)
+            self.cor1l_label = Label(self.inputframe2, text='RA')
+            self.cor1l_label.grid(row =1, column = 2, sticky=W)
+            self.cor2l_label = Label(self.inputframe2, text='Dec')
+            self.cor2l_label.grid(row =1, column = 4, sticky=W)
+
+        else:
+            self.cor1_lin.grid_forget()
+            self.cor2_lin.grid_forget()
+            self.cor1l_label.grid_forget()
+            self.cor2l_label.grid_forget()
+
+            
+    def update_cbody_hor(self,cbody):
+        if cbody=='Sky-Coord':
+            self.cor1_hor=Entry(self.inputframe3,width=5)
+            self.cor1_hor.grid(row=1,column=3,sticky=W)
+            self.cor2_hor=Entry(self.inputframe3,width=5)
+            self.cor2_hor.grid(row=1,column=5,sticky=W)
+            self.cor1h_label = Label(self.inputframe3, text='RA')
+            self.cor1h_label.grid(row =1, column = 2, sticky=W)
+            self.cor2h_label = Label(self.inputframe3, text='Dec')
+            self.cor2h_label.grid(row =1, column = 4, sticky=W)
+        else:
+            self.cor1_hor.grid_forget()
+            self.cor2_hor.grid_forget()
+            self.cor1h_label.grid_forget()
+            self.cor2h_label.grid_forget()  
+
 
     #keep this in case I want to compare encoder postion to galil position
     # i.e. moniter both at the same time
@@ -645,6 +684,11 @@ class interface:
         MinAz = float(self.MinAz_lin.get())
         MaxAz = float(self.MaxAz_lin.get())
 
+        if cbody == 'Sky-Coord':
+            RA = self.cor1_lin.get()
+            DEC = self.cor2_lin.get()
+            cbody = [RA, DEC]
+
         thread = threading.Thread(target=scan.linearScan, args=(location, cbody, numAzScans, MinAz, MaxAz, c))
         thread.daemon = True
         thread.start()
@@ -660,6 +704,11 @@ class interface:
         MinEl = float(self.MinEl.get())
         MaxEl = float(self.MaxEl.get())
         stepSize = float(self.stepSize.get())
+
+        if cbody == 'Sky-Coord':
+            RA = self.cor1_lin.get()
+            DEC = self.cor2_lin.get()
+            cbody = [RA, DEC]        
 
         thread = threading.Thread(target=scan.horizontalScan, args=(location, cbody, numAzScans, MinAz, MaxAz, MinEl, MaxEl, stepSize, c))
         thread.daemon = True

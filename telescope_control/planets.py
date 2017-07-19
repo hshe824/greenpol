@@ -3,12 +3,12 @@
 import sys
 ##sys.path.append('C:/users/labuser/anaconda/lib/site-packages')
 from datetime import datetime
-from astropy.coordinates import AltAz, Angle, EarthLocation, ICRS
+from astropy.coordinates import AltAz, Angle, EarthLocation, ICRS, SkyCoord, frame_transform_graph
 from astropy import units as u
 import ephem
 
-def getlocation(LOCATION, CBODY):
 
+def getlocation(LOCATION):
   #observation locations
   locations = dict(
           Barcroft  = EarthLocation( lat=Angle(37.5838176, 'deg'),
@@ -21,6 +21,49 @@ def getlocation(LOCATION, CBODY):
                                     lon=Angle(-119.843, 'deg'),
                                     height=14 * u.m),
   )
+
+  return locations[LOCATION]
+
+def radec_to_azel(RA, DEC, location):
+
+  #always use current time
+  #time = str(datetime.utcnow())
+  time = '2017-07-19 21:07:29.862000'
+
+  location = getlocation(location)
+
+  #create ra dec sky object
+  radec = SkyCoord(ra = RA, dec = DEC, frame = 'icrs', unit='deg')
+
+  #convert from ra dec to az/el for pointing
+  azel = radec.transform_to(AltAz(obstime = time, location = location))
+
+  az = azel.az.deg
+  el = azel.alt.deg
+
+  return az, el
+
+def azel_to_radec(AZ, EL, location):
+
+  #always use current time
+  #time = str(datetime.utcnow())
+  time = '2017-07-19 21:07:29.862000'
+
+  location = getlocation(location)
+
+  #create ra dec sky object
+  azel = SkyCoord(az = AZ, alt = EL, obstime = time, location = location, frame = 'altaz', unit='deg')
+
+  #convert from ra dec to az/el for pointing
+  radec = azel.icrs
+
+  ra = radec.ra.deg
+  dec = radec.dec.deg
+
+  return ra, dec
+
+def getpointing(LOCATION, CBODY):
+
 
   #celestial bodies
   cbodies = dict(
@@ -36,14 +79,22 @@ def getlocation(LOCATION, CBODY):
   )
 
   #observer location
-  location = locations[LOCATION]
+  location = getlocation(LOCATION)
+
+  #check if cbody is a specific sky location
+  if not isinstance(CBODY, str):
+    RA = CBODY[0]
+    DEC = CBODY[1]
+
+    az, el = radec_to_azel(RA, DEC, location)
+
+    return az, el
 
   #current utc time
   time = str(datetime.utcnow())
 
   #celestial body of interest
   cbody = cbodies[CBODY]
-
 
   #this method take 2x as long and produces a slightly different azel, I am not sure which is more accurate
   '''
@@ -81,3 +132,4 @@ def getlocation(LOCATION, CBODY):
 
   #return azimuth and altitude of celestial body
   return az, alt
+

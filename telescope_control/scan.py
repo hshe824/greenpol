@@ -1,7 +1,7 @@
 #script for linear and horizontal scan patterns
 import config
 import moveto
-#import planets
+import planets
 import sys
 sys.path.append('C:/Python27x86/lib/site-packages')
 import gclib
@@ -48,7 +48,7 @@ def linearScan(location, cbody, numAzScans, MinAz, MaxAz, c):
     for i in range(0, numAzScans):
 
       #find az, el of various sky objects
-      az, el = planets.getlocation(location, cbody)
+      az, el = planets.getpointing(location, cbody)
 
       print('%s az, el: ' % cbody, az, el)
 
@@ -145,7 +145,7 @@ def horizontalScan(location, cbody, numAzScans, MinAz, MaxAz, MinEl, MaxEl, step
       for i in range(0, numAzScans):
 
         #find az, el of varios sky objects
-        az, el = planets.getlocation(location, cbody) 
+        az, el = planets.getpointing(location, cbody) 
        
         print('%s az, el: ' % cbody, az, el)
 

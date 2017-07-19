@@ -54,3 +54,7 @@ automatically load the last saved configuration at start up
 add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
 so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
 notebook tab)
+
+think about how to get real time temperature information
+
+add a button for acq_tel
