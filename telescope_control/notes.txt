@@ -45,11 +45,12 @@ I thought I fixed it so that stop function works for horizontal scan, but it sti
 
 add ability to track around specific ra/dec input points, not just celestial object locations
 add ability to give ra/dec coordinates of current az/el pointing
-
+add ability in moveto to put ra dec coordinates not just az/el
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
 
-add science data to gui plot+output *************
+automatically load the last saved configuration at start up 
 
-
-get pointing from realtime_gp not get_pointing.
+add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
+so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
+notebook tab)

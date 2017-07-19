@@ -1,9 +1,10 @@
-#import scan
-#import moveto
+import scan
+import moveto
 import config
 import connect
 import os
 import sys
+#sys.path.append('C:/Users/labuser/Desktop/python_temp')
 sys.path.append('../')
 sys.path.append('C:/Python27/Lib/site-packages/')
 #sys.path.append('C:/Python27x86/lib/site-packages')
@@ -460,12 +461,12 @@ class interface:
                                       'Step Size':self.stepSize.get()}}
         date = strftime("%Y-%m-%d")
         time=strftime("%H-%M-%S")
-        fpath='c:/Users/shulin/greenpol/'
+        fpath='D:/software_git_repos/greenpol/telescope_control/configurations'
         os.chdir(fpath)
-        fd="gui_config:"+date
+        fd="gui_config-"+date
         if not os.path.exists(fd):#this is the first file being created for that time
             os.makedirs(fd)
-        os.chdir(fpath+'/'+date)
+        os.chdir(fpath+'/'+fd)
 
         fname=self.backup_r.get()
 
@@ -714,7 +715,7 @@ class interface:
                                             hour2,minute2))[var1]
             t=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
                                             hour2,minute2))['gpstime']
-	    print'plotting science data'
+        print'plotting science data'
 
             display_pointing = rt.pointing_plot(var1,y,t)
 
@@ -724,34 +725,34 @@ class interface:
             psd=['PSD(T)','PSD(Q)','PSD(U)']
             parameter=['T','Q','U']
             if var2=='all' and var3 in parameter:
-		print'plotting all in parameter'
+        print'plotting all in parameter'
                 rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)\
-		
+        
             if var2=='all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-		print'plotting all in psd'
+        print'plotting all in psd'
                 rt.plotnow_psd_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
             if var2 != 'all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-		print'plotting channel in psd'
+        print'plotting channel in psd'
                 rt.plotnow_psd(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
-		
+        
                
             else:
-		print'plotting channel in parameter'
+        print'plotting channel in parameter'
 
                 rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
-		
+        
                 
            # plt.plot(combdata[var1][var2][var3],label=ch+' '+ var3)
             
