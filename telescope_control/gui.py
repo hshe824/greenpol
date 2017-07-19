@@ -107,46 +107,46 @@ class interface:
 
         ###### linear scan ######
         page2 = Frame(nb2)
-        self.inputframe2 = Frame(page2)
-        self.inputframe2.pack(side=TOP)
+        self.inputframe_lin = Frame(page2)
+        self.inputframe_lin.pack(side=TOP)
 
         buttonframe = Frame(page2)
         buttonframe.pack(side=BOTTOM)
 
-        self.l1 = Label(self.inputframe2, text='Location')
+        self.l1 = Label(self.inputframe_lin, text='Location')
         self.l1.grid(row = 0, column = 0, sticky=W)
-        self.l2 = Label(self.inputframe2, text='Celestial Object')
+        self.l2 = Label(self.inputframe_lin, text='Celestial Object')
         self.l2.grid(row = 1, column = 0, sticky=W)
-        self.l3 = Label(self.inputframe2, text='Az Scan #')
+        self.l3 = Label(self.inputframe_lin, text='Az Scan #')
         self.l3.grid(row = 2, column = 0, sticky=W)
-        self.l4 = Label(self.inputframe2, text='Min Az')
+        self.l4 = Label(self.inputframe_lin, text='Min Az')
         self.l4.grid(row = 3, column = 0, sticky=W)
-        self.l5 = Label(self.inputframe2, text='Max AZ')
+        self.l5 = Label(self.inputframe_lin, text='Max AZ')
         self.l5.grid(row = 4, column = 0, sticky=W)
 
         #user input
-        self.location_lin = Entry(self.inputframe2,width=10)
+        self.location_lin = Entry(self.inputframe_lin,width=10)
         self.location_lin.insert(END, 'UCSB')
         self.location_lin.grid(row = 0, column = 1,sticky=W)
 
-        self.numAzScans_lin = Entry(self.inputframe2,width=10)
+        self.numAzScans_lin = Entry(self.inputframe_lin,width=10)
         self.numAzScans_lin.insert(END, '2')
         self.numAzScans_lin.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_lin = Entry(self.inputframe2,width=10)
+        self.MinAz_lin = Entry(self.inputframe_lin,width=10)
         self.MinAz_lin.insert(END, '-10.0')
         self.MinAz_lin.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_lin = Entry(self.inputframe2,width=10)
+        self.MaxAz_lin = Entry(self.inputframe_lin,width=10)
         self.MaxAz_lin.insert(END, '10.0')
         self.MaxAz_lin.grid(row = 4, column = 1,sticky=W)
 
 
         ##########linear tracking drop down#######
         self.planets = ['Sky-Coord','Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
-        self.cbody_lin=StringVar(self.inputframe2)
+        self.cbody_lin=StringVar(self.inputframe_lin)
         self.cbody_lin.set(self.planets[1])
-        self.phouse=OptionMenu(self.inputframe2,self.cbody_lin,*self.planets,command=self.update_cbody_lin)
+        self.phouse=OptionMenu(self.inputframe_lin,self.cbody_lin,*self.planets,command=self.update_cbody_lin)
         self.phouse.grid(row = 1, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
@@ -156,55 +156,55 @@ class interface:
 
         ###### horizontal scan ######
         page3 = Frame(nb2)
-        self.inputframe3 = Frame(page3)
-        self.inputframe3.pack(side=TOP)
+        self.inputframe_hor = Frame(page3)
+        self.inputframe_hor.pack(side=TOP)
 
         buttonframe = Frame(page3)
         buttonframe.pack(side=BOTTOM)
 
-        self.l1 = Label(self.inputframe3, text='Location')
+        self.l1 = Label(self.inputframe_hor, text='Location')
         self.l1.grid(row = 0, column = 0, sticky=W)
-        self.l2 = Label(self.inputframe3, text='Celestial Object')
+        self.l2 = Label(self.inputframe_hor, text='Celestial Object')
         self.l2.grid(row = 1, column = 0, sticky=W)
-        self.l3 = Label(self.inputframe3, text='Az Scan #')
+        self.l3 = Label(self.inputframe_hor, text='Az Scan #')
         self.l3.grid(row = 2, column = 0, sticky=W)
-        self.l4 = Label(self.inputframe3, text='Min Az')
+        self.l4 = Label(self.inputframe_hor, text='Min Az')
         self.l4.grid(row = 3, column = 0, sticky=W)
-        self.l5 = Label(self.inputframe3, text='Max AZ')
+        self.l5 = Label(self.inputframe_hor, text='Max AZ')
         self.l5.grid(row = 4, column = 0, sticky=W)
-        self.l6 = Label(self.inputframe3, text='Min El')
+        self.l6 = Label(self.inputframe_hor, text='Min El')
         self.l6.grid(row = 5, column = 0, sticky=W)
-        self.l7 = Label(self.inputframe3, text='Max El')
+        self.l7 = Label(self.inputframe_hor, text='Max El')
         self.l7.grid(row = 6, column = 0, sticky=W)
-        self.l8 = Label(self.inputframe3, text='Step Size')
+        self.l8 = Label(self.inputframe_hor, text='Step Size')
         self.l8.grid(row = 7, column = 0, sticky=W)
 
         #user input
-        self.location_hor = Entry(self.inputframe3,width=10)
+        self.location_hor = Entry(self.inputframe_hor,width=10)
         self.location_hor.insert(END, 'UCSB')
         self.location_hor.grid(row = 0, column = 1,sticky=W)
 
-        self.numAzScans_hor = Entry(self.inputframe3,width=10)
+        self.numAzScans_hor = Entry(self.inputframe_hor,width=10)
         self.numAzScans_hor.insert(END, '2')
         self.numAzScans_hor.grid(row = 2, column = 1,sticky=W)
 
-        self.MinAz_hor = Entry(self.inputframe3,width=10)
+        self.MinAz_hor = Entry(self.inputframe_hor,width=10)
         self.MinAz_hor.insert(END, '-10.0')
         self.MinAz_hor.grid(row = 3, column = 1,sticky=W)
 
-        self.MaxAz_hor = Entry(self.inputframe3,width=10)
+        self.MaxAz_hor = Entry(self.inputframe_hor,width=10)
         self.MaxAz_hor.insert(END, '10.0')
         self.MaxAz_hor.grid(row = 4, column = 1,sticky=W)
 
-        self.MinEl = Entry(self.inputframe3,width=10)
+        self.MinEl = Entry(self.inputframe_hor,width=10)
         self.MinEl.insert(END, '-10.0')
         self.MinEl.grid(row = 5, column = 1,sticky=W)
 
-        self.MaxEl = Entry(self.inputframe3,width=10)
+        self.MaxEl = Entry(self.inputframe_hor,width=10)
         self.MaxEl.insert(END, '10.0')
         self.MaxEl.grid(row = 6, column = 1,sticky=W)
 
-        self.stepSize = Entry(self.inputframe3,width=10)
+        self.stepSize = Entry(self.inputframe_hor,width=10)
         self.stepSize.insert(END, '10.0')
         self.stepSize.grid(row = 7, column = 1,sticky=W)
 
@@ -212,9 +212,9 @@ class interface:
         
         ##########horizontal tracking drop down#######
         self.planets = ['Sky-Coord', 'Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune']
-        self.cbody_hor=StringVar(self.inputframe3)
+        self.cbody_hor=StringVar(self.inputframe_hor)
         self.cbody_hor.set(self.planets[1])
-        self.phouse=OptionMenu(self.inputframe3,self.cbody_hor,*self.planets,command=self.update_cbody_hor)  
+        self.phouse=OptionMenu(self.inputframe_hor,self.cbody_hor,*self.planets,command=self.update_cbody_hor)  
         self.phouse.grid(row = 1, column = 1,sticky=W)
 
         self.scan = Button(buttonframe, 
@@ -289,9 +289,9 @@ class interface:
             text='Start Move', command=self.moveTo)
         self.scan.pack(side=LEFT)
 
-        #self.convert=Button(self.buttonframe2,
-        #                    text='radec/azel',command=self.update_moveto)
-        #self.convert.pack(side=RIGHT)
+        self.convert=Button(self.buttonframe2,
+                            text='radec/azel',command=self.update_moveto)
+        self.convert.pack(side=RIGHT)
 
         ####### notebook layout #########
         nb.add(movePage, text='Move')
@@ -569,13 +569,13 @@ class interface:
     def update_cbody_lin(self,cbody):
         if cbody=='Sky-Coord':
 
-            self.cor1_lin=Entry(self.inputframe2,width=5)
+            self.cor1_lin=Entry(self.inputframe_lin,width=5)
             self.cor1_lin.grid(row=1,column=3,sticky=W)
-            self.cor2_lin=Entry(self.inputframe2,width=5)
+            self.cor2_lin=Entry(self.inputframe_lin,width=5)
             self.cor2_lin.grid(row=1,column=5,sticky=W)
-            self.cor1l_label = Label(self.inputframe2, text='RA')
+            self.cor1l_label = Label(self.inputframe_lin, text='RA')
             self.cor1l_label.grid(row =1, column = 2, sticky=W)
-            self.cor2l_label = Label(self.inputframe2, text='Dec')
+            self.cor2l_label = Label(self.inputframe_lin, text='Dec')
             self.cor2l_label.grid(row =1, column = 4, sticky=W)
 
         else:
@@ -587,13 +587,13 @@ class interface:
             
     def update_cbody_hor(self,cbody):
         if cbody=='Sky-Coord':
-            self.cor1_hor=Entry(self.inputframe3,width=5)
+            self.cor1_hor=Entry(self.inputframe_hor,width=5)
             self.cor1_hor.grid(row=1,column=3,sticky=W)
-            self.cor2_hor=Entry(self.inputframe3,width=5)
+            self.cor2_hor=Entry(self.inputframe_hor,width=5)
             self.cor2_hor.grid(row=1,column=5,sticky=W)
-            self.cor1h_label = Label(self.inputframe3, text='RA')
+            self.cor1h_label = Label(self.inputframe_hor, text='RA')
             self.cor1h_label.grid(row =1, column = 2, sticky=W)
-            self.cor2h_label = Label(self.inputframe3, text='Dec')
+            self.cor2h_label = Label(self.inputframe_hor, text='Dec')
             self.cor2h_label.grid(row =1, column = 4, sticky=W)
         else:
             self.cor1_hor.grid_forget()
@@ -726,16 +726,53 @@ class interface:
 
         #moveto.distance(az, el, c)
 
+    #moveto ra-dec displaying option
+    def update_moveto(self):
+        label=self.mtl1.cget('text')
+        if label=='az':
+            self.mtl1.grid_forget()
+            self.mtl1=Label(self.inputframe2,text='ra')
+            self.mtl1.grid(row=0,column=0,sticky=W)
+            self.mtl2.grid_forget()
+            self.mtl2=Label(self.inputframe2,text='dec')
+            self.mtl2.grid(row=1,column=0,sticky=W)
+            self.mtl3=Label(self.inputframe2,text='location')
+            self.mtl3.grid(row=2,column=0,sticky=W)
+            self.loctxt=Entry(self.inputframe2,width=20)
+            self.loctxt.grid(row=2,column=1,sticky=W)
+            self.loctxt.insert(END,'UCSB')
+        if label=='ra':
+            self.mtl1.grid_forget()
+            self.mtl1=Label(self.inputframe2,text='az')
+            self.mtl1.grid(row=0,column=0,sticky=W)
+            self.mtl2.grid_forget()
+            self.mtl2=Label(self.inputframe2,text='el')
+            self.mtl2.grid(row=1,column=0,sticky=W)
+            self.mtl3.grid_forget()
+            self.loctxt.grid_forget()
+
 
     def moveTo(self):
-        az = float(self.az2.get())
-        el = float(self.el2.get())
+        #check if coordinates are az/el or ra/dec
+        label=self.mtl1.cget('text')
+
+        #if az/el just carry on
+        if label=='az':
+            az = float(self.az2.get())
+            el = float(self.el2.get())
+
+        # if ra/dec, convert to az/el
+        if label=='ra':
+
+            location = self.locationtxt.get()
+
+            ra = float(self.az2.get())
+            dec = float(self.el2.get())
+            az,el=planets.radec_to_azel(ra,dec, location)
 
         thread = threading.Thread(target=moveto.location, args=(az, el, c))
         thread.daemon = True
         thread.start()
-
-        #moveto.location(az, el, c)
 
 
     def plot(self):
@@ -765,7 +802,6 @@ class interface:
                                             hour2,minute2))[var1]
             t=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
                                             hour2,minute2))['gpstime']
-	    print'plotting science data'
 
             display_pointing = rt.pointing_plot(var1,y,t)
 
@@ -775,7 +811,7 @@ class interface:
             psd=['PSD(T)','PSD(Q)','PSD(U)']
             parameter=['T','Q','U']
             if var2=='all' and var3 in parameter:
-		print'plotting all in parameter'
+
                 rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)\
@@ -783,21 +819,21 @@ class interface:
             if var2=='all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-		print'plotting all in psd'
+
                 rt.plotnow_psd_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
             if var2 != 'all' and var3 in psd:
                 indx=psd.index(var3)
                 var3=parameter[indx]
-		print'plotting channel in psd'
+
                 rt.plotnow_psd(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
 		
                
             else:
-		print'plotting channel in parameter'
+
 
                 rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
