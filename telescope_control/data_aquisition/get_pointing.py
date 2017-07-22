@@ -109,7 +109,7 @@ global galilAzOffset
 galilAzOffset = offset(eye,c)[0]
 global galilElOffset
 galilElOffset = offset(eye,c)[1]
-
+	
 '''	
 if __name__=='__main__':
 

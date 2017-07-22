@@ -1,0 +1,88 @@
+(dp0
+S'Linear Scan'
+p1
+(dp2
+S'Min Az'
+p3
+S'-10.0'
+p4
+sS'Celestial Object'
+p5
+S'Sun'
+p6
+sS'Location'
+p7
+S'UCSB'
+p8
+sS'Az Scan #'
+p9
+S'2'
+p10
+sS'Max Az'
+p11
+S'10.0'
+p12
+ssS'Az Scan'
+p13
+(dp14
+S'El Step Size'
+p15
+S'10.0'
+p16
+sS'Iteration #'
+p17
+g10
+sS'Scan Time'
+p18
+S'inf'
+p19
+ssS'Horizontal Scan'
+p20
+(dp21
+g3
+S'-10.0'
+p22
+sS'Step Size'
+p23
+S'10.0'
+p24
+sg7
+S'UCSB'
+p25
+sS'Max El'
+p26
+S'10.0'
+p27
+sS'Min El'
+p28
+S'-10.0'
+p29
+sg5
+S'Sun'
+p30
+sg11
+S'10.0'
+p31
+sg9
+g10
+ssS'Move Distance'
+p32
+(dp33
+S'el'
+p34
+S'0.0'
+p35
+sS'az'
+p36
+S'0.0'
+p37
+ssS'Move to Location'
+p38
+(dp39
+g34
+S'0.0'
+p40
+sg36
+S'0.0'
+p41
+ss.

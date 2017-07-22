@@ -9,8 +9,8 @@ import ephem
 
 
 def getlocation(LOCATION):
-  #observation locations
-  locations = dict(
+	#observation locations
+	locations = dict(
           Barcroft  = EarthLocation( lat=Angle(37.5838176, 'deg'),
                                     lon=Angle(-118.2373297, 'deg'), 
                                     height=3800 * u.m),
@@ -20,9 +20,9 @@ def getlocation(LOCATION):
           UCSB      = EarthLocation( lat=Angle(34.414, 'deg'),
                                     lon=Angle(-119.843, 'deg'),
                                     height=14 * u.m),
-  )
+)
 
-  return locations[LOCATION]
+	return locations[LOCATION]
 
 def radec_to_azel(RA, DEC, location):
 

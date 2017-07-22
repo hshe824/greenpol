@@ -1,0 +1,155 @@
+(dp0
+S'Plot'
+p1
+(dp2
+S'Date'
+p3
+S'2017-06-02'
+p4
+sS'To'
+p5
+S'22-07'
+p6
+sS'From'
+p7
+S'18-17'
+p8
+ssS'Move Distance'
+p9
+(dp10
+S'el'
+p11
+S'0.0'
+p12
+sS'az'
+p13
+S'0.0'
+p14
+ssS'Move to Location'
+p15
+(dp16
+S'el'
+p17
+S'0.0'
+p18
+sS'az'
+p19
+S'0.0'
+p20
+ssS'Az Scan'
+p21
+(dp22
+S'El Step Size'
+p23
+S'10.0'
+p24
+sS'Iteration #'
+p25
+S'2'
+p26
+sS'Scan Time'
+p27
+S'inf'
+p28
+ssS'Linear Scan'
+p29
+(dp30
+S'Min Az'
+p31
+S'-10.0'
+p32
+sS'Celestial Object'
+p33
+S'Sun'
+p34
+sS'Max Az'
+p35
+S'10.0'
+p36
+sS'Az Scan #'
+p37
+g26
+ssS'Configuration'
+p38
+(dp39
+S'elevAC'
+p40
+S'360'
+p41
+sS'azoffset'
+p42
+S'4.41496+140.'
+p43
+sS'eloffset'
+p44
+S'295.026'
+p45
+sS'elgain'
+p46
+S'-360./(40000.)'
+p47
+sS'Location'
+p48
+S'UCSB'
+p49
+sS'azAC'
+p50
+S'180'
+p51
+sS'elevSP'
+p52
+S'5'
+p53
+sS'azSP'
+p54
+g53
+sS'degtoctsAZ'
+p55
+S'1024000./360.'
+p56
+sS'azSPm'
+p57
+g53
+sS'degtoctsEL'
+p58
+S'4096./360.'
+p59
+sS'azDC'
+p60
+S'180'
+p61
+sS'elevDC'
+p62
+S'360'
+p63
+sS'azgain'
+p64
+S'-360./(2.**16)'
+p65
+ssS'Horizontal Scan'
+p66
+(dp67
+S'Step Size'
+p68
+S'10.0'
+p69
+sS'Min El'
+p70
+S'-10.0'
+p71
+sg35
+S'10.0'
+p72
+sg31
+S'-10.0'
+p73
+sS'Max El'
+p74
+S'10.0'
+p75
+sg33
+S'Venus'
+p76
+sg37
+g26
+ss.

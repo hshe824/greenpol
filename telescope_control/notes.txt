@@ -43,9 +43,10 @@ I thought I fixed it so that stop function works for horizontal scan, but it sti
 
 ## more relavent:
 
-add ability to track around specific ra/dec input points, not just celestial object locations
+figure out counts per revolution for elevation axes
+
 add ability to give ra/dec coordinates of current az/el pointing
-add ability in moveto to put ra dec coordinates not just az/el
+
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
 
