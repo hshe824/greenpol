@@ -50,7 +50,7 @@ add ability to give ra/dec coordinates of current az/el pointing
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
 
-automatically load the last saved configuration at start up 
+
 
 add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
 so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
