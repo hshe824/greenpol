@@ -28,7 +28,7 @@ p9
 I10
 sS'degtoctsEL'
 p10
-I108
+F111.1111111111
 sS'azDC'
 p11
 I180
