@@ -39,6 +39,8 @@ offsetEl = gp.galilElOffset
 degtoctsAZ = config.degtoctsAZ
 degtoctsEl = config.degtoctsEl
 
+global_location = config.global_location
+
 class interface:
 
     def __init__(self, master):#, interval = 0.2): 
@@ -446,6 +448,15 @@ class interface:
         self.fdec.grid(row=2, column = 2) 
         '''
 
+        #ra dec output
+        self.lra = Label(outputframe2, text='ra')
+        self.lra.grid(row = 0, column = 2, sticky = W)
+        self.ratxt = Text(outputframe2, height = 1, width = 15)
+        self.ratxt.grid(row = 0, column = 3)
+        self.ldec = Label(outputframe2, text='dec')
+        self.ldec.grid(row = 1, column = 2, sticky = W)
+        self.dectxt = Text(outputframe2, height = 1, width = 15)
+        self.dectxt.grid(row = 1, column = 3)
         '''
         #galil output
         self.lazG = Label(outputframe2, text='az Galil')
@@ -463,10 +474,11 @@ class interface:
         thread.daemon = True                            # Daemonize thread
         thread.start()  
         
-        #thread = threading.Thread(target=self.moniterGalil, args=())
-        #thread.daemon = True                            # Daemonize thread
-        #thread.start() 
-
+	'''
+        thread = threading.Thread(target=self.moniterGalil, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start() 
+	'''
         #plot data
 
         self.outputframe3 = Frame(outputframe)
@@ -857,8 +869,8 @@ class interface:
             dt = t2 - t1
             
             if dt >= 2:
-                Paz = (((float(c2('TPX')) % 1024000) / degtoctsAZ) + offsetAz) % 360
-                Palt = (((float(c2('TPY')) % 4096) / degtoctsEl) + offsetEl) % 360
+                Paz = (float(c2('TPX'))/ degtoctsAZ + offsetAz) % 360.
+                Palt = (float(c2('TPY'))/ degtoctsEl + offsetEl) % 360.
                 self.aztxtG.delete('1.0', END)
                 self.aztxtG.insert('1.0', Paz)
                 self.alttxtG.delete('1.0', END)
@@ -899,6 +911,10 @@ class interface:
             #timer loop
 
             az, el, gpstime = gp.getAzEl(eye)
+	    
+	    #convert to radec
+	    
+	    ra, dec = planets.azel_to_radec(az, el, global_location)
 
             Data.add(az,el,gpstime)
             #print Data.getData()
@@ -911,6 +927,11 @@ class interface:
                 self.aztxt.insert('1.0', az)
                 self.alttxt.delete('1.0', END)
                 self.alttxt.insert('1.0', el)
+		
+		self.ratxt.delete('1.0', END)
+		self.ratxt.insert('1.0', ra)
+		self.dectxt.delete('1.0', END)
+		self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
 ##                gp.fileStruct(Data.getData(), Data)
@@ -936,7 +957,7 @@ class interface:
         #scan.azScan(tscan, iterations, deltaEl, c)
 
     def linear(self):
-        location = config.global_location
+        location = global_location
         cbody = self.cbody_lin.get()
         numAzScans = int(self.numAzScans_lin.get())
         MinAz = float(self.MinAz_lin.get())
@@ -954,7 +975,7 @@ class interface:
         #scan.linearScan(location, cbody, numAzScans, MinAz, MaxAz, c)
 
     def horizontal(self):
-        location = config.global_location
+        location = global_location
         cbody = self.cbody_hor.get()
         numAzScans = int(self.numAzScans_hor.get())
         MinAz = float(self.MinAz_hor.get())
@@ -1016,7 +1037,7 @@ class interface:
         # if ra/dec, convert to az/el
         if label=='ra':
 
-            location = config.global_location
+            location = global_location
 
             ra = float(self.az2.get())
             dec = float(self.el2.get())
