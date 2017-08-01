@@ -27,8 +27,8 @@ def getlocation(LOCATION):
 def radec_to_azel(RA, DEC, location):
 
   #always use current time
-  #time = str(datetime.utcnow())
-  time = '2017-07-19 21:07:29.862000'
+  time = str(datetime.utcnow())
+  #time = '2017-07-19 21:07:29.862000'
 
   location = getlocation(location)
 
@@ -46,8 +46,8 @@ def radec_to_azel(RA, DEC, location):
 def azel_to_radec(AZ, EL, location):
 
   #always use current time
-  #time = str(datetime.utcnow())
-  time = '2017-07-19 21:07:29.862000'
+  time = str(datetime.utcnow())
+  #time = '2017-07-19 21:07:29.862000'
 
   location = getlocation(location)
 
