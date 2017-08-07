@@ -236,20 +236,28 @@ class interface:
         self.l1.grid(row = 0, column = 0, sticky=W)
 
         self.l2 = Label(inputframe, text='el')
-        self.l2.grid(row = 1, column = 0, sticky=W)
+        self.l2.grid(row = 2, column = 0, sticky=W)
 
         #user input
-        self.az = Entry(inputframe)
+        self.az = Entry(inputframe,width=8)
         self.az.insert(END, '0.0')
         self.az.grid(row = 0, column = 1)
 
-        self.el = Entry(inputframe)
+        self.el = Entry(inputframe,width=8)
         self.el.insert(END, '0.0')
-        self.el.grid(row = 1, column = 1)
+        self.el.grid(row = 2, column = 1)
 
-        self.scan = Button(buttonframe, 
-            text='Start Move', command=self.moveDist)
-        self.scan.pack(side=LEFT)
+        
+        plus_azdis = Button(inputframe, text="+",width=5, command=lambda:self.moveDist('+az')) 
+        plus_azdis.grid(row=1, column=1, padx=2, pady=0, sticky="W")
+        minus_azdis = Button(inputframe, text="-",width=5, command=lambda:self.moveDist('-az'))
+        minus_azdis.grid(row=1, column=2, padx=2, pady=2, sticky="W")
+
+
+        plus_eldis = Button(inputframe, text="+",width=5, command=lambda:self.moveDist('+el')) 
+        plus_eldis.grid(row=3, column=1, padx=2, pady=0, sticky="W")
+        minus_eldis = Button(inputframe, text="-",width=5, command=lambda:self.moveDist('-el'))
+        minus_eldis.grid(row=3, column=2, sticky="W")
 
        ########## move to #############
 
@@ -545,6 +553,9 @@ class interface:
         
         self.motorButton = Button(mainFrame, text='Motor ON/OFF', command=self.motor)
         self.motorButton.pack(side=RIGHT)
+	
+	exebutton=Button(mainFrame, text='acq_tel',command=self.openexe)
+	exebutton.pack(side=RIGHT)
         
         ###########Record and Load Configuration###########
 
@@ -582,6 +593,10 @@ class interface:
 	except:
 		pass
 
+    def openexe(self):
+		
+	os.startfile('D:/software_git_repos/greenpol/telescope_control/data_aquisition/acq_tel.exe') #specify the path of .exe file
+    
     def global_config(self):
         global_location=self.location.get()
         degtoctsAZ=eval(self.degtoctsAZ.get())
@@ -995,11 +1010,22 @@ class interface:
 
         #scan.horizontalScan(location, cbody, numAzScans, MinAz, MaxAz, MinEl, MaxEl, stepSize, c)
 
-    def moveDist(self):
-        az = float(self.az.get())
-        el = float(self.el.get())
 
-        thread = threading.Thread(target=moveto.distance, args=(az, el, c))
+    def moveDist(self,x):
+        if x=='+az':
+            az=float(self.az.get())
+            el=0
+        if x=='-az':
+            az=-float(self.az.get())
+            el=0
+        if x=='+el':
+            az=0
+            el=float(self.el.get())
+        if x=='-el':
+            az=0
+            el=-float(self.el.get())
+	
+	thread = threading.Thread(target=moveto.distance, args=(az, el, c))
         thread.daemon = True
         thread.start()
 

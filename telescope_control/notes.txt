@@ -43,8 +43,6 @@ I thought I fixed it so that stop function works for horizontal scan, but it sti
 
 ## more relavent:
 
-figure out counts per revolution for elevation axes - approximately solved
-
 
 
 add logic in move functions to check if youve reached the correct location, and adjust if you havent
@@ -55,8 +53,10 @@ add functionality to find offsets (arrow keys that step in some defined incremen
 so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
 notebook tab)
 
+
+
 think about how to get real time temperature information - info in github petermeinhold/lab_utilites repo
 
-figure out correct mapping of channels for science data
+add ability to plot 2D color plot - az vs el with color scale for signal - for pointing offset, if possible also make it update in real time
 
-add a button for acq_tel
+add ability to plot az vs time vs signal for science data (2D color plot)
