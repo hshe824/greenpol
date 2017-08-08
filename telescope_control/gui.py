@@ -312,57 +312,57 @@ class interface:
         self.degtoctsEL=Entry(configFrame)
         self.degtoctsEL.grid(row=2, column=1)
 
-        self.azSP_l=Label(configFrame, text='azSP')
+        self.azSP_l=Label(configFrame, text='az scan speed')
         self.azSP_l.grid(row=3, column=0, sticky=W)
         self.azSP=Entry(configFrame)
         self.azSP.grid(row=3, column=1)
 
-        self.azAC_l=Label(configFrame, text='azAC')
+        self.azAC_l=Label(configFrame, text='az acceleration')
         self.azAC_l.grid(row=4, column=0, sticky=W)
         self.azAC=Entry(configFrame)
         self.azAC.grid(row=4, column=1)
 
-        self.azDC_l=Label(configFrame, text='azDC')
+        self.azDC_l=Label(configFrame, text='az deceleration')
         self.azDC_l.grid(row=5, column=0, sticky=W)
         self.azDC=Entry(configFrame)
         self.azDC.grid(row=5, column=1)
 
-        self.elevSP_l=Label(configFrame, text='elevSP')
+        self.elevSP_l=Label(configFrame, text='el speed')
         self.elevSP_l.grid(row=6, column=0, sticky=W)
         self.elevSP=Entry(configFrame)
         self.elevSP.grid(row=6, column=1)
 
-        self.elevAC_l=Label(configFrame, text='elevAC')
+        self.elevAC_l=Label(configFrame, text='el acceleration')
         self.elevAC_l.grid(row=7, column=0, sticky=W)
         self.elevAC=Entry(configFrame)
         self.elevAC.grid(row=7, column=1)
 
-        self.elevDC_l=Label(configFrame, text='elevDC')
+        self.elevDC_l=Label(configFrame, text='el deceleration')
         self.elevDC_l.grid(row=8, column=0, sticky=W)
         self.elevDC=Entry(configFrame)
         self.elevDC.grid(row=8, column=1)
 
-        self.azSPm_l=Label(configFrame, text='azSPm')
+        self.azSPm_l=Label(configFrame, text='az move speed')
         self.azSPm_l.grid(row=9, column=0, sticky=W)
         self.azSPm=Entry(configFrame)
         self.azSPm.grid(row=9,column=1)
 
-        self.azgain_l=Label(configFrame, text='azgain')
+        self.azgain_l=Label(configFrame, text='az gain')
         self.azgain_l.grid(row=10, column=0, sticky=W)
         self.azgain=Entry(configFrame)
         self.azgain.grid(row=10,column=1)
 
-        self.elgain_l=Label(configFrame, text='elgain')
+        self.elgain_l=Label(configFrame, text='el gain')
         self.elgain_l.grid(row=11, column=0, sticky=W)
         self.elgain=Entry(configFrame)
         self.elgain.grid(row=11,column=1)
 
-        self.azoffset_l=Label(configFrame, text='azoffset')
+        self.azoffset_l=Label(configFrame, text='az offset')
         self.azoffset_l.grid(row=12, column=0, sticky=W)
         self.azoffset=Entry(configFrame)
         self.azoffset.grid(row=12,column=1)
 
-        self.eloffset_l=Label(configFrame, text='eloffset')
+        self.eloffset_l=Label(configFrame, text='el offset')
         self.eloffset_l.grid(row=13, column=0, sticky=W)
         self.eloffset=Entry(configFrame)
         self.eloffset.grid(row=13,column=1)
@@ -929,6 +929,7 @@ class interface:
 	    
 	    #convert to radec
 	    
+	    #print el
 	    ra, dec = planets.azel_to_radec(az, el, global_location)
 
             Data.add(az,el,gpstime)
@@ -949,7 +950,7 @@ class interface:
 		self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
-##                gp.fileStruct(Data.getData(), Data)
+                gp.fileStruct(Data.getData(), Data)
                 time_a=time.time();
                 print("file written")
                 

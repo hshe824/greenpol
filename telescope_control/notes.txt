@@ -8,15 +8,12 @@ code to keep telescope from pointing below horizon may need higher limit than 0
 
 it might be possible/better to combine the forward and backward passes into one block of code, use -1**i and a list for min/max az then do list[i % 2] or something like that (scan.py: linearScan() & horizontalScan())
 
-add elevation logic to not let azscan go below horizon, at some point
 
 
 figure out if there is a better way to convert az el coordinates outputted by ephem into degrees(planets.py)
 
 put in logic that allows for different scan times at each elevation(scan.py: azScan())
 
-
-forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
 
 Think about how best to display ouput, and what output we want to display (gui related)
 
@@ -38,15 +35,25 @@ galil commands that will never change (AC/DC) can be set at beginning of gui.py,
 
 get_pointing.py is set up to write files every minute, logic will need to change if we want files more frequently
 
-I thought I fixed it so that stop function works for horizontal scan, but it still just stops the iteration its on then goes to the next iteration(scan.horizontalScan())
+
+## bugs
+
+figure out issue where elevation pointing jumps to negative values at different points
+elevation above ~60 outputs ~260 and stays negative from that point on
+elevation below ~30 outputs ~-240 before returning to proper location on downward motion
+"              "~15 outputs ~-380 "                                     " upwards and downwards motion
+elevation above ~50 outputs ~-55/-20 "                                      " upwards and downwards motion
+
+code thinks elevation axis is done moving before it actually is
+
+
+counts to degree conversion for elevation axis is not quite right, figure out the right value
+
+forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
+
 
 
 ## more relavent:
-
-
-
-add logic in move functions to check if youve reached the correct location, and adjust if you havent
-
 
 
 add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
@@ -54,9 +61,10 @@ so when you find the correct pointing the offset is however much you have moved,
 notebook tab)
 
 
-
 think about how to get real time temperature information - info in github petermeinhold/lab_utilites repo
 
 add ability to plot 2D color plot - az vs el with color scale for signal - for pointing offset, if possible also make it update in real time
 
 add ability to plot az vs time vs signal for science data (2D color plot)
+
+figure out issue where elevation pointing jumps from -60 to ~-260 degrees

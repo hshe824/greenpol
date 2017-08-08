@@ -15,6 +15,8 @@ def wait(c):
 '''
 def wait(c):
     while c('MG _BGA') != '0.0000' or c('MG _BGB') != '0.0000':
+
+	print c('MG _BGB')
         #print(c('MG _BGA'),c('MG _BGB'))
 
         pass
@@ -51,7 +53,7 @@ def location(az, el, c):
 
     #keep telescope from pointing below horizon
     if el < 0. or el > 180.:
-        print('Warning, this elevation is below the horizon, your going to break the telescope...')
+        print('Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % el)
         return 
 
     #convert new coordinates to cts

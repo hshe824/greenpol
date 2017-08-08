@@ -16,6 +16,7 @@ def wait(c):
 
 def wait(c):
     while c('MG _BGA') != '0.0000' or c('MG _BGB') != '0.0000':
+
         #print(c('MG _BGA'),c('MG _BGB'))
         pass
 
@@ -52,10 +53,10 @@ def linearScan(location, cbody, numAzScans, MinAz, MaxAz, c):
 
       print('%s az, el: ' % cbody, az, el)
 
-      #keep the telescope from pointing below the horizon
+      #keep telescope from pointing below horizon
       if el < 0. or el > 180.:
-        print('Warning, this elevation is below the horizon, your going to break the telescope...')
-        return 
+	print('Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % el)
+	return 
 
       #forward scan
       if (i % 2) == 0:
@@ -150,8 +151,13 @@ def horizontalScan(location, cbody, numAzScans, MinAz, MaxAz, MinEl, MaxEl, step
         print('%s az, el: ' % cbody, az, el)
 
         #keep the telescope from pointing below the horizon
-        if el + MinEl < 0. or el + MaxEl > 180.:
-          print('Warning, this elevation is below the horizon, your going to break the telescope...')
+        if el + MinEl < 0.:
+          print('Warning, %.2f deg min elevation is below the horizon, your going to break the telescope...' % (el + MinEl))
+          return
+	  
+	#keep the telescope from pointing below the horizon
+        if el + MaxEl > 180.:
+          print('Warning, %.2f deg max elevation is below the horizon, your going to break the telescope...' % (el + MaxEl))
           return
 
         #forward scan
@@ -287,7 +293,10 @@ def azScan(tscan, iterations, deltaEl, c):
       P2AZ = ((float(c('TPX')) / degtoctsAZ) + offsetAz) % 360. 
       P2El = ((float(c('TPY')) / degtoctsEl) + offsetEl) % 360.
       print('AZ:', P2AZ, 'Elev:', P2El)
-
+      
+      if P2El + deltaEl < 0. or P2El + deltaEl > 180.:
+	      print 'Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % P2El + deltaEl
+ 
       #change elevation for next az scan
       if i < iterations - 1:
         print('changing elevation')
