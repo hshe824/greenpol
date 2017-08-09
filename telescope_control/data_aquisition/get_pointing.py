@@ -6,6 +6,7 @@ import get_6509_bits as getData
 import time
 import sys
 sys.path.append('../')
+#sys.path.append('D:/software_git_repos/greenpol/telescope_control')
 import config
 import connect
 
@@ -15,14 +16,15 @@ conversions for angles, integer to degrees:
 '''
 #azgain=-360./(2.**16)    #az encoder is 16 bits natural binary 
 #elgain=360./(35999.)    #stupid encoder is BCD 18 bits 4 digits of 4 bits and one of two bits max 4x10x10x10x10
-#eloffset=290.            old offset, updated this
+#eloffset=290.            #old offset, updated this
 #eloffset=0.0     #updated based on moon crossing 2013/08/02, cofe 10 ghz ch3
 #azoffset=0.0         #same
-
+#config.update_config()
 azgain = config.azgain
 elgain = config.elgain
 eloffset = config.eloffset
 azoffset = config.azoffset
+
 
 def bcd_to_int(bcd_str):
 	string= ''
@@ -33,7 +35,8 @@ def bin_to_int(bin_str):
 	return int(bin_str,2)
 
 def fileStruct(n_array, data):
-	os.chdir("D:/software_git_repos/greenpol/telescope_control/")
+
+	os.chdir("D:/software_git_repos/greenpol/telescope_control/")	
 	t=dt.datetime.now()
 	date = t.strftime("%m-%d-%Y")
 	time = t.strftime("%H-%M-%S")
@@ -73,20 +76,20 @@ class datacollector(object):
 	def getData(self):
 		return self.data
 
-def getAzEl(eye):
+def getAzEl():
 
 	all = eye.getData()
 	
-	az=np.mod(azgain*bin_to_int(all[0])+azoffset,360.)
+	az= (azgain*bin_to_int(all[0])+azoffset) % 360.
 	
-	el=eloffset+elgain*bcd_to_int(all[1])
+	el= (eloffset+elgain*bcd_to_int(all[1])) % 360.
 
 	gpstime=bin_to_int(all[2])
 
 	return az, el, gpstime
 
 #this is the offset between the optical beam and the galil
-def offset(eye, c):
+def offset(c):
 	
     # deg to ct conversion for each motor
     degtoctsAZ = config.degtoctsAZ
@@ -95,8 +98,8 @@ def offset(eye, c):
     azGalil = (float(c('TPX')) / degtoctsAZ) % 360.                            
     elGalil = (float(c('TPY')) / degtoctsEl) % 360.
 
-    azBeam = getAzEl(eye)[0]
-    elBeam = getAzEl(eye)[1]
+    azBeam = getAzEl()[0]
+    elBeam = getAzEl()[1]
 
     azOffset = azBeam - azGalil
     elOffset = elBeam - elGalil
@@ -106,9 +109,14 @@ def offset(eye, c):
 eye = getData.Eyeball()
 c = connect.g.GCommand
 global galilAzOffset
-galilAzOffset = offset(eye,c)[0]
+galilAzOffset = offset(c)[0]
 global galilElOffset
-galilElOffset = offset(eye,c)[1]
+galilElOffset = offset(c)[1]
+
+if __name__=='__main__':
+	while True:
+		az, el, gpstime = getAzEl()
+		print el
 	
 '''	
 if __name__=='__main__':
@@ -133,13 +141,12 @@ if __name__=='__main__':
 		#print Data.getData()
 		time_b = time.time()
 		delta = time_b-time_a
-		if (delta>=5):
-		    print gpstime,az,el
+		#if (delta>=5):
+		#print el
+
 		if(delta>=int(write_time)): 
 		    fileStruct(Data.getData(), Data)
 		    time_a=time.time()
 		    print "file written"
 	print "data collected at" + str(1.0/delta) +"HZ"
 '''
-		
-		

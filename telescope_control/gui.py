@@ -32,6 +32,7 @@ c = g.GCommand
 ##
 g2 = connect.g2
 c2 = g2.GCommand
+
 #offset between galil and beam
 offsetAz = gp.galilAzOffset 
 offsetEl = gp.galilElOffset
@@ -913,10 +914,10 @@ class interface:
     def moniter(self):
     
         write_time = 60
-        if len(sys.argv)==1: #this is the defualt no argument write time
-            sys.argv.append(60) #this sets how long it takes to write a file
+        if len(sys.argv)>1: #this is the defualt no argument write time
+            write_time=sys.argv[-1] #this sets how long it takes to write a file
         #data = np.zeros(1000, dtype=[("first", np.int), ("second", np.int)])
-        eye = gp.getData.Eyeball()
+        #eye = gp.getData.Eyeball()
         Data = gp.datacollector()
 
         #gp.fileStruct(Data.getData()) 
@@ -925,12 +926,12 @@ class interface:
         while True:
             #timer loop
 
-            az, el, gpstime = gp.getAzEl(eye)
-	    
-	    #convert to radec
-	    
-	    #print el
-	    ra, dec = planets.azel_to_radec(az, el, global_location)
+            az, el, gpstime = gp.getAzEl()
+    
+    	    #convert to radec
+    	    
+    	    #print el
+    	    ra, dec = planets.azel_to_radec(az, el, global_location)
 
             Data.add(az,el,gpstime)
             #print Data.getData()
@@ -944,10 +945,10 @@ class interface:
                 self.alttxt.delete('1.0', END)
                 self.alttxt.insert('1.0', el)
 		
-		self.ratxt.delete('1.0', END)
-		self.ratxt.insert('1.0', ra)
-		self.dectxt.delete('1.0', END)
-		self.dectxt.insert('1.0', dec)		
+        		self.ratxt.delete('1.0', END)
+        		self.ratxt.insert('1.0', ra)
+        		self.dectxt.delete('1.0', END)
+        		self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
                 gp.fileStruct(Data.getData(), Data)
