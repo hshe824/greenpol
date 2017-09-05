@@ -15,7 +15,7 @@ conversions for angles, integer to degrees:
 
 '''
 #azgain=-360./(2.**16)    #az encoder is 16 bits natural binary 
-#elgain=360./(35999.)    #stupid encoder is BCD 18 bits 4 digits of 4 bits and one of two bits max 4x10x10x10x10
+#elgain=-360./(35999.)    #stupid encoder is BCD 18 bits 4 digits of 4 bits and one of two bits max 4x10x10x10x10
 #eloffset=290.            #old offset, updated this
 #eloffset=0.0     #updated based on moon crossing 2013/08/02, cofe 10 ghz ch3
 #azoffset=0.0         #same
@@ -36,7 +36,7 @@ def bin_to_int(bin_str):
 
 def fileStruct(n_array, data):
 
-	os.chdir("D:/software_git_repos/greenpol/telescope_control/")	
+	os.chdir("D:/software_git_repos/greenpol/telescope_control/data_aquisition")	
 	t=dt.datetime.now()
 	date = t.strftime("%m-%d-%Y")
 	time = t.strftime("%H-%M-%S")
@@ -97,6 +97,7 @@ def offset(c):
 	
     azGalil = (float(c('TPX')) / degtoctsAZ) % 360.                            
     elGalil = (float(c('TPY')) / degtoctsEl) % 360.
+    a= float(c('TPX'))
 
     azBeam = getAzEl()[0]
     elBeam = getAzEl()[1]
@@ -104,7 +105,7 @@ def offset(c):
     azOffset = azBeam - azGalil
     elOffset = elBeam - elGalil
 
-    return azOffset, elOffset
+    return azOffset, elOffset, a
 
 eye = getData.Eyeball()
 c = connect.g.GCommand
@@ -112,11 +113,13 @@ global galilAzOffset
 galilAzOffset = offset(c)[0]
 global galilElOffset
 galilElOffset = offset(c)[1]
+global a
+a=offset(c)[2]
 
 if __name__=='__main__':
 	while True:
 		az, el, gpstime = getAzEl()
-		print el
+		#print el
 	
 '''	
 if __name__=='__main__':
