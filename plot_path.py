@@ -38,10 +38,9 @@ def select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
     
 ##select a staring-time and an ending-time, it returns h5 files in between
 def select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
-    
+
     #searching all hdf5 files under selected path
     all_fname=glob.glob(fpath+yrmoday[4:6]+'-'+yrmoday[6:8]+'-'+yrmoday[0:4]+'/*.h5')
-    
     ftime=time_conv(st_hour,st_minute,ed_hour,ed_minute)
     
     star=ftime[0]+"-"+ftime[1]
@@ -49,6 +48,7 @@ def select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
 
     sub_fname=[ i for i in all_fname
                 if i[-11:][:5]>=star and i[-11:][:5]<=end]
+
     return sub_fname
 
 if __name__=="__main__":
