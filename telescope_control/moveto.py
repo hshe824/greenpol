@@ -16,7 +16,7 @@ def wait(c):
 def wait(c):
     while c('MG _BGA') != '0.0000' or c('MG _BGB') != '0.0000':
 
-	print c('MG _BGB')
+	#print c('MG _BGB')
         #print(c('MG _BGA'),c('MG _BGB'))
 
         pass
@@ -49,22 +49,30 @@ def location(az, el, c):
     #P1AZ = P1AZ - offset, or replace TP
     P1El = (float(c('TPY'))+offsetEl*degtoctsEl) % (degtoctsEl * 360.) 
     print('AZ_0:', P1AZ / degtoctsAZ, 'Elev_0:', P1El / degtoctsEl)
-
+    
+    
+    if az == None:
+	    az = P1AZ / degtoctsAZ
+    if el == None:
+	    el = P1El / degtoctsEl
+    
 
     #keep telescope from pointing below horizon
     if el < 0. or el > 180.:
         print('Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % el)
         return 
 
+
     #convert new coordinates to cts
     P2AZ = az % 360 * degtoctsAZ
     P2El = el % 360 * degtoctsEl
+    
     
     #azimuth scan settings
     azSP = config.azSPm # speed
     azAC = config.azAC # acceleration 
     azDC = config.azDC # deceleration
-
+    
     azD = (P2AZ - P1AZ) # distance to desired az
     
     #make it rotate the short way round

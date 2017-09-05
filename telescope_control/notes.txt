@@ -38,19 +38,17 @@ get_pointing.py is set up to write files every minute, logic will need to change
 
 ## bugs
 
-figure out issue where elevation pointing jumps to negative values at different points
-elevation above ~60 outputs ~260 and stays negative from that point on
-elevation below ~30 outputs ~-240 before returning to proper location on downward motion
-"              "~15 outputs ~-380 "                                     " upwards and downwards motion
-elevation above ~50 outputs ~-55/-20 "                                      " upwards and downwards motion
+
 
 code thinks elevation axis is done moving before it actually is
+
 
 
 counts to degree conversion for elevation axis is not quite right, figure out the right value
 
 forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
 
+galil and encoder position values loose sync with one another, this could propagate over time causing innacurate pointing.
 
 
 ## more relavent:
@@ -61,10 +59,20 @@ so when you find the correct pointing the offset is however much you have moved,
 notebook tab)
 
 
-think about how to get real time temperature information - info in github petermeinhold/lab_utilites repo
+add ability to do realtime plotting in gui
 
-add ability to plot 2D color plot - az vs el with color scale for signal - for pointing offset, if possible also make it update in real time
+add ability to plot 2D color plot - az vs el with color scale for signal - realtime + acq_tel data
 
-add ability to plot az vs time vs signal for science data (2D color plot)
+add ability to plot az vs time vs signal for science data (2D color plot) - real time + acq_tel data
 
-figure out issue where elevation pointing jumps from -60 to ~-260 degrees
+
+change moveto button to move az and el seperately, its annoying as is when you only want to move one.
+
+add detector voltage to real time feedback + ability to plot it vs time (statically and/or realtime) + off switch for when were running acq_tel
+
+go through code and make sure comments are up to date and sufficiently descriptive
+
+make helical scan pattern option
+
+add cryogenic feedback info, update after each file is produced, average over file
+

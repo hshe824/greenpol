@@ -8,6 +8,7 @@ import sys
 #sys.path.append('C:/Users/labuser/Desktop/python_temp')
 sys.path.append('D:/software_git_repos/greenpol')
 sys.path.append('C:/Python27/Lib/site-packages/')
+sys.path.append('D:/software_git_repos/lab_utilities/IO_3001_USB_acquisition')
 #sys.path.append('C:/Python27x86/lib/site-packages')
 sys.path.append('data_aquisition')
 import get_pointing as gp
@@ -26,6 +27,11 @@ import realtime_gp as rt
 import matplotlib.pyplot as plt
 from plot_path import *
 import planets
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+#import plotsignal
+from daq import daqDevice
+import daqh
+from random import randint
 
 g = connect.g
 c = g.GCommand
@@ -278,17 +284,24 @@ class interface:
         self.mtl2.grid(row = 1, column = 0, sticky=W)
 
         #user input
-        self.az2 = Entry(self.inputframe2)
+        self.az2 = Entry(self.inputframe2,width=8)
         self.az2.insert(END, '0.0')
         self.az2.grid(row = 0, column = 1)
 
-        self.el2 = Entry(self.inputframe2)
+        self.el2 = Entry(self.inputframe2,width=8)
         self.el2.insert(END, '0.0')
         self.el2.grid(row = 1, column = 1)
+	
+	az2mt = Button(self.inputframe2, text="Move",width=6, command=lambda:self.moveTo('az')) 
+        az2mt.grid(row=0, column=2, padx=2, pady=0, sticky="W")        
 
-        self.scan = Button(self.buttonframe2, 
-            text='Start Move', command=self.moveTo)
-        self.scan.pack(side=LEFT)
+        el2mt = Button(self.inputframe2, text="Move",width=6, command=lambda:self.moveTo('el')) 
+        el2mt.grid(row=1, column=2, padx=2, pady=0, sticky="W")
+       
+
+        #self.scan = Button(self.buttonframe2, 
+            #text='Start Move', command=self.moveTo)
+        #self.scan.pack(side=LEFT)
 
         self.convert=Button(self.buttonframe2,
                             text='radec/azel',command=self.update_moveto)
@@ -411,12 +424,41 @@ class interface:
 		
 	except:
 		pass
+		
+	
+	########### real time plot frame ##################
+        
+	realtimePage=Frame(nb)
+        realtimeFrame=Frame(realtimePage)
+        realtimeFrame.pack(side=TOP)
+	self.pplotFrame = Frame(realtimePage)
+	self.pplotFrame.pack(side=BOTTOM)
+	
+	self.sigthread = None
+        self.plotting = False
+	
+	self.fig = plt.figure(figsize=(5,4))
+        #ax= self.fig.add_axes([0.1,0.1,0.8,0.8])
+	ax1=self.fig.add_subplot(2,1,1)
+	ax2=self.fig.add_subplot(2,1,2)
+        canvas=FigureCanvasTkAgg(self.fig,master=self.pplotFrame)
+        canvas.get_tk_widget().grid(row=0,column=1)
+	
+        canvas.show()
 
+
+        self.pplotbutton=Button(realtimeFrame, text="plot", command=lambda: self.pplot_thread(True,canvas,ax1,ax2))
+        self.pplotbutton.grid(row=0,column=0)
+
+        self.endbutton=Button(realtimeFrame, text="end", command=lambda: self.pplot_thread(False,canvas,ax1,ax2))
+        self.endbutton.grid(row=0,column=1)
+	
         ####### notebook layout #########
         nb.add(movePage, text='Move')
         nb.add(page1, text='Az Scan')
         nb.add(nb2, text='Track')
         nb.add(configPage,text='Configuration')
+	nb.add(realtimePage,text='Live Plot')
         nb2.add(page2, text = 'Linear Scan')
         nb2.add(page3, text = 'Horizontal Scan')
 
@@ -448,15 +490,8 @@ class interface:
 
         self.alttxt = Text(outputframe2, height = 1, width = 15)
         self.alttxt.grid(row = 1, column = 1)
-        '''
-        self.convertbutton = Button(mainFrame, text='RA/Dec', command=self.azel_to_radec)
-        self.convertbutton.grid(row=2, column=0)
-        self.fra = Text(outputframe2, height=1, width =5)
-        self.fra.grid(row=2, column = 1)
-        self.fdec = Text(outputframe2, height=1, width =5)
-        self.fdec.grid(row=2, column = 2) 
-        '''
 
+        
         #ra dec output
         self.lra = Label(outputframe2, text='ra')
         self.lra.grid(row = 0, column = 2, sticky = W)
@@ -476,18 +511,18 @@ class interface:
         self.laltG.grid(row = 1, column = 2, sticky = W)
         self.alttxtG = Text(outputframe2, height = 1, width = 15)
         self.alttxtG.grid(row = 1, column = 3)
-        '''
+	'''
         #thread stuff
         #self.interval = interval
         thread = threading.Thread(target=self.moniter, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start()  
         
-	'''
-        thread = threading.Thread(target=self.moniterGalil, args=())
-        thread.daemon = True                            # Daemonize thread
-        thread.start() 
-	'''
+	
+        #thread = threading.Thread(target=self.moniterGalil, args=())
+        #thread.daemon = True                            # Daemonize thread
+        #thread.start() 
+	
         #plot data
 
         self.outputframe3 = Frame(outputframe)
@@ -545,7 +580,7 @@ class interface:
         self.stopbutton = Button(mainFrame, text='Stop', command=self.stop)
         self.stopbutton.pack(side=LEFT)
 
-        self.quitButton = Button(mainFrame, text='Exit', command=master.quit)
+        self.quitButton = Button(mainFrame, text='Exit', command=self.exit)
         self.quitButton.pack(side=LEFT)
 
         self.motorTxt = Text(mainFrame, height = 1, width = 3)
@@ -593,6 +628,7 @@ class interface:
 		self.read(fname=fname,date=latest_subdir)
 	except:
 		pass
+		
 
     def openexe(self):
 		
@@ -821,13 +857,19 @@ class interface:
             self.bar3.set('T')
             self.option3=OptionMenu(self.outputframe3,self.bar3,*self.choice3)
             self.option3.grid(row=1,column=1,sticky=W)
+	    self.choice4=['sig v az','sig v az v el', 'sig v az v time']
+            self.bar4=StringVar()
+            self.bar4.set('sig v az')
+            self.option4=OptionMenu(self.outputframe3,self.bar4,*self.choice4)
+            self.option4.grid(row=3,column=1,sticky=W)
 
-            self.l5.grid_forget()
-            self.l6.grid_forget()
+            #self.l5.grid_forget()
+            #self.l6.grid_forget()
         else:
             try:
                 self.option2.grid_forget()
                 self.option3.grid_forget()
+		self.option4.grid_forget()
             except AttributeError:
                 pass
             
@@ -894,21 +936,6 @@ class interface:
                 #this is currently asking galil for position, it needs to ask encoder
 
                 #time.sleep(self.interval)
-    def show_radec(self):
-        self.lra=Label(self.outputframe2, text='ra')
-        self.lra.grid(row=0, column=2, sticky=W)
-        self.ratxt=Text(self.outputframe2, height=1, width=15)
-        self.ratxt.grid(row=0,column=3)
-
-        self.ldec=Label(self.outputframe2, text='dec')
-        self.ldec.grid(row=1, column=2, sticky=W)
-        self.dectxt=Text(self.outputframe2, height=1, width=15)
-        self.dectxt.grid(row=1, column=3)
-    def hide_radec(self):
-        self.lra.grid_forget()
-        self.ratxt.grid_forget()
-        self.ldec.grid_forget()
-        self.dectxt.grid_forget()
            
     
     def moniter(self):
@@ -926,12 +953,19 @@ class interface:
         while True:
             #timer loop
 
-            az, el, gpstime = gp.getAzEl()
-    
-    	    #convert to radec
-    	    
-    	    #print el
-    	    ra, dec = planets.azel_to_radec(az, el, global_location)
+	    global gaz, gel, ggpstime
+	    gaz, gel, ggpstime = gp.getAzEl() 
+	    
+	    az, el, gpstime = gaz, gel, ggpstime
+
+	
+	    if el < 0. or el > 90.:
+		    continue
+
+	    #convert to radec
+	    
+	    #print el
+	    ra, dec = planets.azel_to_radec(az, el, global_location)
 
             Data.add(az,el,gpstime)
             #print Data.getData()
@@ -945,16 +979,16 @@ class interface:
                 self.alttxt.delete('1.0', END)
                 self.alttxt.insert('1.0', el)
 		
-        		self.ratxt.delete('1.0', END)
-        		self.ratxt.insert('1.0', ra)
-        		self.dectxt.delete('1.0', END)
-        		self.dectxt.insert('1.0', dec)		
+		self.ratxt.delete('1.0', END)
+		self.ratxt.insert('1.0', ra)
+		self.dectxt.delete('1.0', END)
+		self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
                 gp.fileStruct(Data.getData(), Data)
                 time_a=time.time();
                 print("file written")
-                
+	 
         print("data collected at" + str(1.0/delta) +"HZ")
         
     def scanAz(self):
@@ -1053,7 +1087,7 @@ class interface:
             self.mtl2.grid(row=1,column=0,sticky=W)
 
 
-    def moveTo(self):
+    def moveTo(self,tag):
         #check if coordinates are az/el or ra/dec
         label=self.mtl1.cget('text')
 
@@ -1070,13 +1104,26 @@ class interface:
             ra = float(self.az2.get())
             dec = float(self.el2.get())
             az,el=planets.radec_to_azel(ra,dec, location)
+	    
+	if tag=='az':
+            az=az
+            #el= (float(c('TPY'))/ degtoctsEl + offsetEl) % 360.
+	    el = None
+        if tag=='el':
+            #az= (float(c('TPX'))/ degtoctsAZ + offsetAz) % 360.
+	    az = None
+            el=el
+                
 
         thread = threading.Thread(target=moveto.location, args=(az, el, c))
         thread.daemon = True
         thread.start()
 
     def plot(self):
-        fpath='D:/software_git_repos/greenpol/telescope_control/'
+	
+	plt.close('all')
+	
+        fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition/'
 
         var1 = self.bar1.get()
         date = self.date.get()
@@ -1098,8 +1145,10 @@ class interface:
         minute2 = str(time2[1])
 
         if var1 != 'sci_data':
+
             y=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
                                             hour2,minute2))[var1]
+					    
             t=rt.get_h5_pointing(select_h5(fpath,yrmoday,hour1,minute1,
                                             hour2,minute2))['gpstime']
 
@@ -1108,8 +1157,10 @@ class interface:
         else:
             var2 = self.bar2.get()
             var3 = self.bar3.get()
+	    var4 = self.bar4.get()
             psd=['PSD(T)','PSD(Q)','PSD(U)']
             parameter=['T','Q','U']
+	    ptype = ['sig v az','sig v az v el', 'sig v az v time']
             if var2=='all' and var3 in parameter:
                 rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
@@ -1126,17 +1177,205 @@ class interface:
                 rt.plotnow_psd(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
                                      ed_hour=hour2,ed_minute=minute2)
+				     
+	    if var2 == 'all' and var4 != ptype[0]:
+		    print 'Can only plot one channel at a time for 3D plots'
+		    return
+		    
+	    if var3 in psd and var4 != ptype[0]:
+		print 'I havent added this capability yet'
+		return
                
             else:
-
-                rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
-                                     st_hour=hour1,st_minute=minute1,
-                                     ed_hour=hour2,ed_minute=minute2)
+		if var4 == ptype[0]:
+			rt.plotnow(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+					     st_hour=hour1,st_minute=minute1,
+					     ed_hour=hour2,ed_minute=minute2)
+					     
+		if var4 == ptype[1]:
+			rt.plotnow_azelsig(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+					     st_hour=hour1,st_minute=minute1,
+					     ed_hour=hour2,ed_minute=minute2)
+		if var4 == ptype[2]:
+			rt.plotnow_aztimesig(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+					     st_hour=hour1,st_minute=minute1,
+					     ed_hour=hour2,ed_minute=minute2)
+			
                 
            # plt.plot(combdata[var1][var2][var3],label=ch+' '+ var3)
             
 
-    #this does not currently work for horizontal scan, you have to keep pressing it
+
+    
+    def pplot_thread(self, plotting, canvas, ax1,ax2):
+        
+        if self.sigthread != None:
+            self.plotting = False
+            self.sigthread.join()
+            self.sigthread = None
+        if plotting:
+            self.plotting = True
+            if self.sigthread == None:
+                self.sigthread = threading.Thread(target=self.pplot,args=(canvas,ax1,ax2))
+		#self.sigthread = threading.Thread(target=plotsignal.plot_azelsig,args=(0, 10, self.plotting, canvas))
+		self.sigthread.start()
+
+
+    #round number to nearest resolution
+    def round_fraction(self, number, res):
+	amount = int(number/res)*res
+	remainder = number - amount
+	return amount if remainder < res/2. else amount+res
+
+    def pplot(self,canvas,ax1,ax2):
+	#clean the former plot
+	plt.clf()
+	canvas.show()
+	'''
+        c = ['r','b','g']  # plot marker colors
+        i = 0
+        #if self.plotting:
+        while self.plotting:
+            #ax.clear()         # clear axes from previous plot
+            theta = np.random.uniform(0,360,10)
+            r = np.random.uniform(0,1,10)
+            ax.plot(theta,r,linestyle="None",marker='o', color=c[i%3])
+            canvas.draw()
+            i += 1
+            time.sleep(1)
+	'''  
+	
+	# Device name as registered with the Windows driver.
+	dev=daqDevice('DaqBoard3031USB')
+	
+	chan = 1 # add this as arg later
+	# Input channel number.
+	channel = chan
+	if channel > 7:
+	    channel = 256 + channel - 8
+	    
+	# Programmable amplifier with gain of 1.
+	gain = daqh.DgainX1
+
+	# Bipolar-voltage differential input, unsigned-integer readout.
+	flags = (
+	    daqh.DafAnalog | daqh.DafUnsigned  # Default flags.
+	    | daqh.DafBipolar | daqh.DafDifferential  # Nondefault flags.
+	    )
+    
+	# max_voltage and bit_depth are device specific.
+	# Our device's bipolar voltage range is -10.0 V to +10.0 V.
+	max_voltage = 10.0
+	# Our device is a 16 bit ADC.
+	bit_depth = 16
+	
+	
+	
+	#plot resolution
+	dx = 10.
+	#add this as arg later
+	#dx = res
+	dy = dx/4.
+	
+	#sky boundaries
+	x, y = np.arange(0., 360. + dx, dx), np.arange(0., 90. + dy, dy)
+	az, el = np.meshgrid(x, y)
+	
+	#set up signal matrix to add values to
+	z = np.zeros(len(x)*len(y))
+	sig = np.reshape(z, (len(y),len(x)))
+	
+	
+	
+	
+	#start interactive plot
+	#plt.ion()
+	
+	i = 0
+	epsilon = 1e-6
+	
+	#real time voltage
+	ax2=self.fig.add_subplot(2,1,2)
+	plt.xlabel('Time(s)')
+	plt.ylabel('Voltage')
+	plt.grid(True)
+	ax2.set_position([0.15, 0.11, 0.7, 0.3])
+	
+	#az vs. el vs. voltage
+	ax1=self.fig.add_subplot(2,1,1)
+	plt.axis([x.min(), x.max(), y.min(), y.max()])
+	plt.ylabel('Elevation (deg)')
+	plt.xlabel('Azimuth (deg)')
+	plt.title('voltage output for channel %d' % chan)
+	
+	#time1 = gp.getAzEl()[2]
+	time1 = time.time()
+	
+	while self.plotting:
+		
+		# Read one sample.
+		data = dev.AdcRd(channel, gain, flags)
+		# Convert sample from unsigned integer value to bipolar voltage.
+		volts = data*max_voltage*2/(2**bit_depth) - max_voltage
+		#volts = randint(0,10)
+		
+		#time interval
+		time2=time.time()
+		t=time2-time1
+		ax2.scatter(t,volts, c='b', marker='.')
+		
+		
+		#get pointing information
+		#AZ, EL = gp.getAzEl()[0], gp.getAzEl()[1]
+		AZ, EL = gaz, gel
+		
+		if EL < 0. or EL > 90.:
+			continue
+		
+		#round pointing info to resolution
+		AZ = self.round_fraction(AZ, dx)
+		EL = self.round_fraction(EL, dy) 
+		
+		#find index in matrix corresponding to position
+		iel = np.where(abs(el - EL) < epsilon)[0][0]
+		iaz = np.where(abs(az.T - AZ) < epsilon)[0][0]
+		
+		#assign voltage value to az el position in matrix
+		sig[iel][iaz] = volts
+		
+		plt.pcolormesh(az, el, sig)
+		if i == 0:
+			plt.colorbar()
+			#plt.clim(-10., 10.)
+			#plt.clim(-2.0,0.0)
+			
+
+		canvas.draw()
+		
+		if i < 1:
+			i += 1
+			
+		time.sleep(0.01)
+		
+		'''			
+		#ax.clear()         # clear axes from previous plot
+		theta = np.random.uniform(0,360,10)
+		r = np.random.uniform(0,1,10)
+		ax.plot(theta,r,linestyle="None",marker='o', color=c[i%3])
+		canvas.draw()
+		i += 1
+		time.sleep(1)
+		'''
+	path='D:/software_git_repos/greenpol/telescope_control/configurations/signalplot'
+	os.chdir(path)
+	cwd=os.getcwd()
+	fname=str(time.strftime('%Y%m%d%H%M%S'))
+	plt.savefig(os.path.join(cwd,fname+'.png'))
+	txtname='signal'+fname
+	np.savetxt(txtname+'.txt',sig)
+	
+	
+	
     
     def stop(self):
         print('stopping motion...')
@@ -1163,6 +1402,11 @@ class interface:
             self.motorTxt.delete('1.0', END)
             self.motorTxt.insert('1.0', 'ON')  
             print 'motor on'
+    def exit(self):
+	    #root.quit()
+	    root.destroy()
+		
+
 
 root = Tk()
 root.title("Telescope Control")
