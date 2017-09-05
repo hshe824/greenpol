@@ -9,7 +9,7 @@ sys.path.append('D:\software_git_repos\greenpol\cofe-python-analysis-tools-maste
 from glob import glob
 import os
 import matplotlib.pyplot as plt
-#import cofe_util as cu
+import cofe_util as cu
 import demod
 import h5py
 import cPickle
@@ -18,6 +18,8 @@ from numpy.lib import recfunctions as recf
 import matplotlib.pyplot as plt
 from plot_path import *
 from prm_util import nps
+import time
+import scipy.interpolate
 samprate=27.  #assumed spin rate of pol modulator for rough time estimation inside files
 
 def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,azel_era=3):
@@ -212,6 +214,124 @@ def plotnow(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_in
     plt.grid()
     plt.show()
     return combined
+ 
+#round number to nearest resolution
+def round_fraction(number, res):
+    amount = int(number/res)*res
+    remainder = number - amount
+    return amount if remainder < res/2. else amount+res
+    
+def plotnow_aztimesig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1	
+	flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+    
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
+    combined=combine_cofe_h5_pointing(dd,pp)
+    
+    az1 = combined['az'] 
+    t1 = np.linspace(0,60,num=len(az1))
+   
+    data = combined['sci_data'][chan][var]
+    
+    
+    steps = len(data)
+    #steps = 100
+    
+    x, y = np.linspace(0., 360., steps), np.linspace(0., 90., steps)
+    
+    az, t = np.meshgrid(x, y)
+    z = np.zeros(steps**2)
+    sig = np.reshape(z, (len(y), len(x)))
+    
+    dx = 360./(steps - 1.)
+    dy = 90./(steps - 1.)
+    epsilon = 1e-6
+    
+    
+    for i in range(steps):
+	
+	az1[i] = round_fraction(az1[i], dx)
+	t1[i] = round_fraction(t1[i], dy)
+	
+    it = np.where(abs(t - t1) < epsilon)[0][0]
+    iaz = np.where(abs(az.T - az1) < epsilon)[0][0]
+    
+    for i in range(steps):
+	sig[it][iaz] = data[i]
+  
+   
+    plt.pcolormesh(az, t, sig)
+    plt.colorbar(label = 'Signal, V')
+    plt.clim(data.min(),data.max())
+    plt.axis([az1.min(), az1.max(), t1.min(), t1.max()])
+
+
+ 
+    plt.ylabel('time (gpstime)')
+    plt.xlabel('azimuth (deg)')
+    plt.title('channel %s %s data binned to azimuth and gpstime, date %s' % (chan, var, fld[-1][-21:-13]))
+    
+    plt.show()
+    
+def plotnow_azelsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+    flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
+    i=0
+    while len(flp)<3:
+        i+=1	
+	flp=select_h5(fpath,yrmoday,st_hour,int(st_minute)-i,ed_hour,int(ed_minute)+i)
+    
+    pp=get_h5_pointing(flp)
+    dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
+    combined=combine_cofe_h5_pointing(dd,pp)
+    
+    az1, el1 = combined['az'], combined['el']
+    
+    data = combined['sci_data'][chan][var]
+    
+    steps = len(data)
+    #steps = 100
+    
+    x, y = np.linspace(0., 360., steps), np.linspace(0., 90., steps)
+    
+    az, el = np.meshgrid(x, y)
+    z = np.zeros(steps**2)
+    sig = np.reshape(z, (len(y), len(x)))
+    
+    dx = 360./(steps - 1.)
+    dy = 90./(steps - 1.)
+    epsilon = 1e-6
+    
+    
+    for i in range(steps):
+	
+	az1[i] = round_fraction(az1[i], dx)
+	el1[i] = round_fraction(el1[i], dy)
+	
+    iel = np.where(abs(el - el1) < epsilon)[0][0]
+    iaz = np.where(abs(az.T - az1) < epsilon)[0][0]
+    
+    for i in range(steps):
+	sig[iel][iaz] = data[i]
+
+    
+    plt.pcolormesh(az, el, sig)
+    plt.colorbar(label = 'Signal, V')
+    plt.clim(data.min(),data.max())
+    plt.axis([0., 360., 0., 90.])
+    print el1.min(), el1.max(), '!!!!!!!!!!!'
+    plt.ylabel('Elevation (deg)')
+    plt.xlabel('azimuth (deg)')
+    plt.title('channel %s %s data binned to azimuth and elevation, date %s' % (chan, var, fld[-1][-21:-13]))
+    #plt.grid()
+    plt.show()
+
+
 
 def plotnow_all(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
     flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
@@ -307,14 +427,14 @@ def plotnow_psd_all(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,s
     return freqs,pxx
         
 
-def plotrawnow(yrmoday,chan,var,path,rstep=50,supply_index=False):
+def plotrawnow(yrmoday,chan,var,fpath,rstep=50,supply_index=False):
     """
     function to automatically read last science file plot raw data vs encoder
     yrmoday should be a string '20130502' fpath should point to the 
     directory where acq_tel and converter.py were run
     rstep determines how many revolutions to skip between plotted revolutions
     """
-    fld=glob(fpath+'data/'+yrmoday+'/*.dat')
+    fld=glob.glob(fpath+'data/'+yrmoday+'/*.dat')
     fld.sort()
     stats=os.stat(fld[-1])
     if stats.st_size == 10752000:
@@ -398,14 +518,21 @@ def pointing_plot(var,vector,gpstime):
     plt.legend()
     plt.grid()
     plt.show()
+
 if __name__=="__main__":
     yrmoday='20170602'
-    fpath='D:/software_git_repos/greenpol/telescope_control/'
+    fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition'
     chan='ch2'
     var='T'
-    freqs,pxx=plotnow_psd(fpath,yrmoday,chan,var,18,15,22,22)
-##    freqs=freqs[0:10],pxx=pxx[0:10]
-    print freqs,pxx
-    plt.plot(freqs,pxx,'bo')
-    plt.show()
+    plotnow_aztimesig(fpath,yrmoday,chan,var,18,15,22,22)
 
+'''
+#yrmoday='20170602'
+#fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition/pointing_data'
+yrmoday='20170602'
+fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition/'
+chan='1'
+var='T'
+plotnow_azelsig(fpath,yrmoday,chan,var,18,15,22,22)
+#plotrawnow(yrmoday,chan,var,fpath,rstep=50,supply_index=False)
+'''
