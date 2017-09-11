@@ -233,7 +233,8 @@ def plotnow_aztimesig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute
     dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
     combined=combine_cofe_h5_pointing(dd,pp)
     
-    az1 = combined['az'] 
+    az1 = combined['az']
+
     t1 = np.linspace(0,60,num=len(az1))
    
     data = combined['sci_data'][chan][var]

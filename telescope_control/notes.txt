@@ -42,13 +42,14 @@ get_pointing.py is set up to write files every minute, logic will need to change
 
 code thinks elevation axis is done moving before it actually is
 
+galil and encoder position values loose sync with one another, this could propagate over time causing innacurate pointing.
+
 
 
 counts to degree conversion for elevation axis is not quite right, figure out the right value
 
 forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
 
-galil and encoder position values loose sync with one another, this could propagate over time causing innacurate pointing.
 
 
 ## more relavent:
@@ -59,20 +60,19 @@ so when you find the correct pointing the offset is however much you have moved,
 notebook tab)
 
 
-add ability to do realtime plotting in gui
 
 add ability to plot 2D color plot - az vs el with color scale for signal - realtime + acq_tel data
 
-add ability to plot az vs time vs signal for science data (2D color plot) - real time + acq_tel data
+add ability to plot az vs time vs signal for science data (2D color plot) - acq_tel data
 
 
-change moveto button to move az and el seperately, its annoying as is when you only want to move one.
-
-add detector voltage to real time feedback + ability to plot it vs time (statically and/or realtime) + off switch for when were running acq_tel
 
 go through code and make sure comments are up to date and sufficiently descriptive
 
 make helical scan pattern option
 
 add cryogenic feedback info, update after each file is produced, average over file
+
+incorporate functionality from peters notebook
+
 
