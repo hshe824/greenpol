@@ -56,18 +56,23 @@ class interface:
         mainFrame.pack()
 
         nb = ttk.Notebook(mainFrame)
+	
+	##### scan patterns ######
 
         ##### azimuth scan #####
         page1 = Frame(nb)
 
-        #topframe = Frame(page1)
-        #topframe.pack(side=TOP)
+        topframe = Frame(page1)
+        topframe.pack(side=TOP)
+	
+	labelAZ = Label(topframe, text = 'azimuth scan')
+        labelAZ.pack()
 
         inputframe = Frame(page1)
         inputframe.pack(side=TOP)
 
         buttonframe = Frame(page1)
-        buttonframe.pack(side=BOTTOM)
+        buttonframe.pack()
 
         #self.title = Label(topframe, text = 'Az Scan')
         #self.title.pack()
@@ -110,6 +115,62 @@ class interface:
             text='Start Scan', 
             command=self.scanAz)
         self.scan.pack(side=LEFT)
+	
+	###### helical scan #######
+	
+        secondframe = Frame(page1)
+        secondframe.pack(side=TOP)
+	
+	labelhelical = Label(secondframe, text = 'helical scan')
+        labelhelical.pack()
+
+        inputframe2 = Frame(page1)
+        inputframe2.pack(side=TOP)
+
+        buttonframe2 = Frame(page1)
+        buttonframe2.pack()
+
+        #self.title = Label(topframe, text = 'Az Scan')
+        #self.title.pack()
+
+        self.l1 = Label(inputframe2, text='Scan Time (minutes)')
+        self.l1.grid(row = 0, column = 0, sticky=W)
+        self.l4 = Label(inputframe2, text='("inf" for continuous scan)')
+        self.l4.grid(row = 1, column = 1, sticky=W)
+        self.l2 = Label(inputframe2, text='min scan position')
+        self.l2.grid(row = 2, column = 0, sticky=W)
+        self.l3 = Label(inputframe2, text='max scan position')
+        self.l3.grid(row = 3, column = 0, sticky=W)
+        #self.l4 = Label(inputframe, text='Starting AZ (deg)')
+        #self.l4.grid(row = 3, column = 0, sticky=W)
+        #self.l5 = Label(inputframe, text='Starting EL (deg)')
+        #self.l5.grid(row = 4, column = 0, sticky=W)
+
+        #user input
+        self.tscan2 = Entry(inputframe2)
+        self.tscan2.insert(END, 'inf')
+        self.tscan2.grid(row = 0, column = 1)
+
+        self.lim1 = Entry(inputframe2)
+        self.lim1.insert(END, '40.0')
+        self.lim1.grid(row = 2, column = 1)
+
+        self.lim2 = Entry(inputframe2)
+        self.lim2.insert(END, '50.0')
+        self.lim2.grid(row = 3, column = 1)
+
+        #self.az0 = Entry(inputframe)
+        #self.az0.insert(END, '0.0')
+        #self.az0.grid(row = 3, column = 1)
+
+        #self.el0 = Entry(inputframe)
+        #self.el0.insert(END, '60.0')
+        #self.el0.grid(row = 4, column = 1)
+
+        self.scanhelical = Button(buttonframe2, 
+            text='Start Scan', 
+            command=self.scanHelical)
+        self.scanhelical.pack(side=LEFT)
 
 
         ###### tracking  ######
@@ -491,7 +552,7 @@ class interface:
         self.alttxt = Text(outputframe2, height = 1, width = 15)
         self.alttxt.grid(row = 1, column = 1)
 
-        
+        '''
         #ra dec output
         self.lra = Label(outputframe2, text='ra')
         self.lra.grid(row = 0, column = 2, sticky = W)
@@ -511,7 +572,7 @@ class interface:
         self.laltG.grid(row = 1, column = 2, sticky = W)
         self.alttxtG = Text(outputframe2, height = 1, width = 15)
         self.alttxtG.grid(row = 1, column = 3)
-	'''
+	
         #thread stuff
         #self.interval = interval
         thread = threading.Thread(target=self.moniter, args=())
@@ -519,18 +580,18 @@ class interface:
         thread.start()  
         
 	
-        #thread = threading.Thread(target=self.moniterGalil, args=())
-        #thread.daemon = True                            # Daemonize thread
-        #thread.start() 
+        thread = threading.Thread(target=self.moniterGalil, args=())
+        thread.daemon = True                            # Daemonize thread
+        thread.start() 
 	
-        #plot data
+        ########## plot data ##########
 
         self.outputframe3 = Frame(outputframe)
         self.outputframe3.pack()
 
-        self.scan = Button(self.outputframe3, 
+        self.plotButton = Button(self.outputframe3, 
             text='Plot', command=self.plot)
-        self.scan.grid(row = 0, column = 0, sticky=W)
+        self.plotButton.grid(row = 0, column = 0, sticky=W)
 
 
     
@@ -857,7 +918,7 @@ class interface:
             self.bar3.set('T')
             self.option3=OptionMenu(self.outputframe3,self.bar3,*self.choice3)
             self.option3.grid(row=1,column=1,sticky=W)
-	    self.choice4=['sig v az','sig v az v el', 'sig v az v time']
+	    self.choice4=['sig v az','sig v az v el', 'sig v az v rev']
             self.bar4=StringVar()
             self.bar4.set('sig v az')
             self.option4=OptionMenu(self.outputframe3,self.bar4,*self.choice4)
@@ -957,6 +1018,7 @@ class interface:
 	    gaz, gel, ggpstime = gp.getAzEl() 
 	    
 	    az, el, gpstime = gaz, gel, ggpstime
+	    #print az, el
 
 	
 	    if el < 0. or el > 90.:
@@ -979,10 +1041,10 @@ class interface:
                 self.alttxt.delete('1.0', END)
                 self.alttxt.insert('1.0', el)
 		
-		self.ratxt.delete('1.0', END)
-		self.ratxt.insert('1.0', ra)
-		self.dectxt.delete('1.0', END)
-		self.dectxt.insert('1.0', dec)		
+		#self.ratxt.delete('1.0', END)
+		#self.ratxt.insert('1.0', ra)
+		#self.dectxt.delete('1.0', END)
+		#self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
                 gp.fileStruct(Data.getData(), Data)
@@ -1006,6 +1068,20 @@ class interface:
         thread.start()
 
         #scan.azScan(tscan, iterations, deltaEl, c)
+	
+    def scanHelical(self):
+
+        tscan = self.tscan2.get()
+        if tscan == 'inf':
+            tscan = np.inf
+        else:
+            tscan = float(tscan)
+	lim1 = float(self.lim1.get())
+        lim2 = float(self.lim2.get())
+
+        thread = threading.Thread(target=scan.helicalScan, args=(tscan, lim1, lim2, c))
+        thread.daemon = True
+        thread.start()
 
     def linear(self):
         location = global_location
@@ -1160,7 +1236,7 @@ class interface:
 	    var4 = self.bar4.get()
             psd=['PSD(T)','PSD(Q)','PSD(U)']
             parameter=['T','Q','U']
-	    ptype = ['sig v az','sig v az v el', 'sig v az v time']
+	    ptype = ['sig v az','sig v az v el', 'sig v az v rev']
             if var2=='all' and var3 in parameter:
                 rt.plotnow_all(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
                                      st_hour=hour1,st_minute=minute1,
@@ -1197,7 +1273,7 @@ class interface:
 					     st_hour=hour1,st_minute=minute1,
 					     ed_hour=hour2,ed_minute=minute2)
 		if var4 == ptype[2]:
-			rt.plotnow_aztimesig(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
+			rt.plotnow_azrevsig(fpath=fpath,yrmoday=yrmoday,chan=var2,var=var3,
 					     st_hour=hour1,st_minute=minute1,
 					     ed_hour=hour2,ed_minute=minute2)
 			

@@ -20,6 +20,8 @@ from plot_path import *
 from prm_util import nps
 import time
 import scipy.interpolate
+import numpy.ma as ma
+
 samprate=27.  #assumed spin rate of pol modulator for rough time estimation inside files
 
 def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,azel_era=3):
@@ -69,14 +71,14 @@ def get_h5_pointing(filelist,startrev=None, stoprev=None,angles_in_ints=False,az
     filelist.sort()
     for f in filelist:
         stats=os.stat(f)
-        if stats.st_size<150000:
+        if stats.st_size<22144:
             print f,stats.st_size
-        if stats.st_size > 150000:
-            #print(f)
-            h=h5py.File(f)
-            hh=h['data']
-            hpointing.append(hh[hh['gpstime']>=hh['gpstime'][0]])
-            h.close()
+        if stats.st_size >= 22144:
+	    h=h5py.File(f)
+	    hh=h['data']
+	    hpointing.append(hh[hh['gpstime']>=hh['gpstime'][0]])
+	    #print hpointinng
+	    h.close()
     
     hpointing = np.concatenate(hpointing)
     #cut out blank lines from unfilled files
@@ -155,6 +157,7 @@ def combine_cofe_h5_pointing(dd,h5pointing,outfile='combined_data.pkl'):
     azout=np.interp(dd['rev'],prev,paz)
     azout=np.mod(azout,360.)
     elout=np.interp(dd['rev'],prev,h5pointing['el'])
+    
     f=open(outfile,'wb')
     combined_data={'sci_data':dd,'az': azout,'el':elout}
     cPickle.dump(combined_data,f,protocol=-1)
@@ -221,7 +224,7 @@ def round_fraction(number, res):
     remainder = number - amount
     return amount if remainder < res/2. else amount+res
     
-def plotnow_aztimesig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
+def plotnow_azrevsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
     flp=select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
     fld=select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute)
     i=0
@@ -234,49 +237,77 @@ def plotnow_aztimesig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute
     combined=combine_cofe_h5_pointing(dd,pp)
     
     az1 = combined['az']
+    data1 = combined['sci_data'][chan][var]
+    steps = len(data1)
+    
+    #resolution
+    dx = 1.0
+    dy = 1.0
+    
+    #set up empty lists to append each revolution to
+    data = []
+    az = []
+    iaz = [0]
+    rev = 0
+    
+    #determine indices in azimuth/data array which correspond to a new revolution of the telescope
+    for i in range(steps):
+	#round values to resolution for comparison later
+        az1[i] = round_fraction(az1[i], dx)
+        if i > 0:
+            if abs(az1[i] - az1[i-1]) >= 180.:
+                iaz.append(i)
+                rev += 1
+    
+    #append each revolution array to a list	    
+    for j in range(rev):
+        az.append(az1[iaz[j]:iaz[j+1]])
+        data.append(data1[iaz[j]:iaz[j+1]])
+    
+    #append the last revolution
+    data.append(data1[iaz[-1]:])
+    az.append(az1[iaz[-1]:])
+    rev += 1
 
-    t1 = np.linspace(0,60,num=len(az1))
-   
-    data = combined['sci_data'][chan][var]
+    data = np.asarray(data)
+    az = np.asarray(az)
     
+    #create grid for plotting
+    x, y = np.arange(0., 360.+dx, dx), np.arange(0., rev - 1 + dy, dy)
+    AZ, REV = np.meshgrid(x, y)
     
-    steps = len(data)
-    #steps = 100
-    
-    x, y = np.linspace(0., 360., steps), np.linspace(0., 90., steps)
-    
-    az, t = np.meshgrid(x, y)
-    z = np.zeros(steps**2)
+    #set up empty 
+    z = np.zeros(len(x)*len(y))
     sig = np.reshape(z, (len(y), len(x)))
     
-    dx = 360./(steps - 1.)
-    dy = 90./(steps - 1.)
+    #small number for comparing floats
     epsilon = 1e-6
     
+    #fill signal array with data points
+    for r in range(rev):
+        for a in range(len(x)):
+	    #find indices where combined azimuth data fits on x grid
+            idx = np.where(abs(az[r] - x[a]) < epsilon)[0]
+	    #if idx length is 0 this corresponds to missing data
+            if len(idx) == 0:
+                sig[r][a] = None
+	    #if idx length is greater than 1, there are multiple data pts falling on the same az pt, => avg them
+            elif len(idx) > 1:
+                sig[r][a] = data[r][idx].mean()
+            else:
+                sig[r][a] = data[r][idx]
     
-    for i in range(steps):
-	
-	az1[i] = round_fraction(az1[i], dx)
-	t1[i] = round_fraction(t1[i], dy)
-	
-    it = np.where(abs(t - t1) < epsilon)[0][0]
-    iaz = np.where(abs(az.T - az1) < epsilon)[0][0]
+    #mask none values to make color scale more clear in plot		    
+    Z = ma.masked_where(np.isnan(sig),sig)
     
-    for i in range(steps):
-	sig[it][iaz] = data[i]
-  
-   
-    plt.pcolormesh(az, t, sig)
+    plt.pcolormesh(AZ, REV, Z)
     plt.colorbar(label = 'Signal, V')
-    plt.clim(data.min(),data.max())
-    plt.axis([az1.min(), az1.max(), t1.min(), t1.max()])
-
-
- 
-    plt.ylabel('time (gpstime)')
+    plt.clim(data1.min(),data1.max())
+    plt.axis([0., 360., 0., rev - 1])
+    plt.ylabel('revolution #')
     plt.xlabel('azimuth (deg)')
-    plt.title('channel %s %s data binned to azimuth and gpstime, date %s' % (chan, var, fld[-1][-21:-13]))
-    
+    plt.title('channel %s %s data binned to azimuth and revolution #, date %s' % (chan, var, fld[-1][-21:-13]))
+    plt.grid()
     plt.show()
     
 def plotnow_azelsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_index=False):
@@ -521,11 +552,14 @@ def pointing_plot(var,vector,gpstime):
     plt.show()
 
 if __name__=="__main__":
-    yrmoday='20170602'
-    fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition'
-    chan='ch2'
+    yrmoday='20170908'
+    fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition/'
+    chan='ch4'
     var='T'
-    plotnow_aztimesig(fpath,yrmoday,chan,var,18,15,22,22)
+    #get_h5_pointing(select_h5(fpath,yrmoday,18,15,24,22))
+    #plotnow_aztimesig(fpath,yrmoday,chan,var,18,15,23,59)
+    plotrawnow(yrmoday,chan,var,fpath,rstep=50,supply_index=False)
+    #plotnow(fpath,yrmoday,chan,var,18,15,23,59)
 
 '''
 #yrmoday='20170602'
