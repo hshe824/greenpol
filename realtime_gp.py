@@ -209,7 +209,15 @@ def plotnow(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,supply_in
     pp=get_h5_pointing(flp)
     dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
     combined=combine_cofe_h5_pointing(dd,pp)
-    plt.plot(combined['az'],combined['sci_data'][chan][var],label=chan)
+    
+    az = combined['az']
+    data = combined['sci_data'][chan][var]
+    
+    #sort data according to sorted azimuth
+    data = [x for _,x in sorted(zip(az,data))]
+    az = sorted(az)
+    
+    plt.plot(az,data,label=chan)
     plt.xlabel('Azimuth angle, degrees')
     plt.ylabel('Signal, V')
     plt.title(chan+' COFE data binned to azimuth, date: '+fld[-1][-21:-13])
@@ -236,6 +244,7 @@ def plotnow_azrevsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,
     dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
     combined=combine_cofe_h5_pointing(dd,pp)
     
+    #synchronized data and az values
     az1 = combined['az']
     data1 = combined['sci_data'][chan][var]
     steps = len(data1)
@@ -276,7 +285,7 @@ def plotnow_azrevsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,
     x, y = np.arange(0., 360.+dx, dx), np.arange(0., rev - 1 + dy, dy)
     AZ, REV = np.meshgrid(x, y)
     
-    #set up empty 
+    #set up empty array
     z = np.zeros(len(x)*len(y))
     sig = np.reshape(z, (len(y), len(x)))
     
@@ -288,19 +297,13 @@ def plotnow_azrevsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,
         for a in range(len(x)):
 	    #find indices where combined azimuth data fits on x grid
             idx = np.where(abs(az[r] - x[a]) < epsilon)[0]
-	    #if idx length is 0 this corresponds to missing data
-            if len(idx) == 0:
-                sig[r][a] = None
-	    #if idx length is greater than 1, there are multiple data pts falling on the same az pt, => avg them
-            elif len(idx) > 1:
-                sig[r][a] = data[r][idx].mean()
-            else:
-                sig[r][a] = data[r][idx]
+	    #if idx length is 0 this will create a mask on that point, in idx len > 1, avg data points in the same bin
+	    sig[r][a] = data[r][idx].mean()
     
-    #mask none values to make color scale more clear in plot		    
-    Z = ma.masked_where(np.isnan(sig),sig)
+    #mask invalid values, i.e. where there are no data points
+    sig = ma.masked_invalid(sig)
     
-    plt.pcolormesh(AZ, REV, Z)
+    plt.pcolormesh(AZ, REV, sig)
     plt.colorbar(label = 'Signal, V')
     plt.clim(data1.min(),data1.max())
     plt.axis([0., 360., 0., rev - 1])
@@ -322,45 +325,61 @@ def plotnow_azelsig(fpath,yrmoday,chan,var,st_hour,st_minute,ed_hour,ed_minute,s
     dd=get_demodulated_data_from_list(fld,supply_index=supply_index)
     combined=combine_cofe_h5_pointing(dd,pp)
     
+    #synchronized data az and el values
     az1, el1 = combined['az'], combined['el']
-    
     data = combined['sci_data'][chan][var]
     
     steps = len(data)
-    #steps = 100
     
-    x, y = np.linspace(0., 360., steps), np.linspace(0., 90., steps)
+    #set az/el resolution
+    dx = 1.0
+    dy = 1.0
     
-    az, el = np.meshgrid(x, y)
-    z = np.zeros(steps**2)
-    sig = np.reshape(z, (len(y), len(x)))
+    #set up bins/grid
+    x, y = np.arange(0., 360.+dx, dx), np.arange(0., 90. + dy, dy)
+    AZ, EL = np.meshgrid(x, y)
     
-    dx = 360./(steps - 1.)
-    dy = 90./(steps - 1.)
+    #small number for comparing floats
     epsilon = 1e-6
     
+    #set up matrix for signal 
+    z1 = np.zeros(len(x)*len(y))
+    sig = np.reshape(z1, (len(y), len(x)))
     
-    for i in range(steps):
-	
-	az1[i] = round_fraction(az1[i], dx)
-	el1[i] = round_fraction(el1[i], dy)
-	
-    iel = np.where(abs(el - el1) < epsilon)[0][0]
-    iaz = np.where(abs(az.T - az1) < epsilon)[0][0]
-    
-    for i in range(steps):
-	sig[iel][iaz] = data[i]
+    #set up matrix for keeping track of data points in single bin for averaging
+    z2 = np.zeros(len(x)*len(y))
+    count = np.reshape(z2, (len(y), len(x)))
 
+    for i in range(steps):
+	 
+        #round az/el points for comparison with grid	    
+	el1[i] = round_fraction(el1[i], dy)
+        az1[i] = round_fraction(az1[i], dx)  
+	
+	#find where data points belong in grid
+        iel = np.where(abs(y - el1[i]) < epsilon)[0][0]
+        iaz = np.where(abs(x - az1[i]) < epsilon)[0][0]
+	
+	#add 1 each time data point lands in same bin
+        count[iel][iaz] += 1
     
-    plt.pcolormesh(az, el, sig)
+	#add total number of data values in bin
+        sig[iel][iaz] = sig[iel][iaz] + data[i]  
+
+    #mask 0 count values so they dont show up in color plot
+    count = ma.masked_where(count == 0.0, count)
+    
+    #take average of all data points in single bin
+    sig = sig/count
+    
+    plt.pcolormesh(AZ, EL, sig)
     plt.colorbar(label = 'Signal, V')
     plt.clim(data.min(),data.max())
     plt.axis([0., 360., 0., 90.])
-    print el1.min(), el1.max(), '!!!!!!!!!!!'
-    plt.ylabel('Elevation (deg)')
+    plt.ylabel('elevation (deg)')
     plt.xlabel('azimuth (deg)')
     plt.title('channel %s %s data binned to azimuth and elevation, date %s' % (chan, var, fld[-1][-21:-13]))
-    #plt.grid()
+    plt.grid()
     plt.show()
 
 
