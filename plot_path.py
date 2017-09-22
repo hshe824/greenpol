@@ -40,7 +40,7 @@ def select_dat(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
 def select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
 
     #searching all hdf5 files under selected path
-    all_fname=glob.glob(fpath+yrmoday[4:6]+'-'+yrmoday[6:8]+'-'+yrmoday[0:4]+'/*.h5')
+    all_fname=glob.glob(fpath+'pointing_data/'+yrmoday[4:6]+'-'+yrmoday[6:8]+'-'+yrmoday[0:4]+'/*.h5')
     ftime=time_conv(st_hour,st_minute,ed_hour,ed_minute)
     
     star=ftime[0]+"-"+ftime[1]
@@ -52,10 +52,10 @@ def select_h5(fpath,yrmoday,st_hour,st_minute,ed_hour,ed_minute):
     return sub_fname
 
 if __name__=="__main__":
-    fpath='C:/Users/shulin/greenpol/'
+    fpath='D:/software_git_repos/greenpol/telescope_control/data_aquisition/'
 
-    yrmoday='20170602'
-    print len(select_dat(fpath,yrmoday,17,00,18,00))
-    print len(select_h5(fpath,yrmoday,17,00,18,00))
+    yrmoday='20170907'
+    print len(select_dat(fpath,yrmoday,17,00,24,00))
+    print len(select_h5(fpath,yrmoday,17,00,24,00))
 
 
