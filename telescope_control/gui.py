@@ -27,11 +27,11 @@ import realtime_gp as rt
 import matplotlib.pyplot as plt
 from plot_path import *
 import planets
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-#import plotsignal
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from daq import daqDevice
 import daqh
-from random import randint
+import numpy.ma as ma
+import warnings
 
 g = connect.g
 c = g.GCommand
@@ -489,7 +489,8 @@ class interface:
 	
 	########### real time plot frame ##################
         
-	realtimePage=Frame(nb)
+	realtimePage=Frame(mainFrame)
+	realtimePage.pack(side=RIGHT)
         realtimeFrame=Frame(realtimePage)
         realtimeFrame.pack(side=TOP)
 	self.pplotFrame = Frame(realtimePage)
@@ -506,20 +507,28 @@ class interface:
         canvas.get_tk_widget().grid(row=0,column=1)
 	
         canvas.show()
+	
+	self.rtchan=['ch0','ch1','ch2','ch3','ch4','ch5','ch6','ch7'
+                          ,'ch8','ch9','ch10','ch11','ch12','ch13','ch14',
+                          'ch15']
+	self.rtvar=StringVar()
+	self.rtvar.set('ch0')
+	self.rtoption=OptionMenu(realtimeFrame,self.rtvar,*self.rtchan)
+	self.rtoption.grid(row=0,column=0,sticky=W)
 
 
         self.pplotbutton=Button(realtimeFrame, text="plot", command=lambda: self.pplot_thread(True,canvas,ax1,ax2))
-        self.pplotbutton.grid(row=0,column=0)
+        self.pplotbutton.grid(row=0,column=1)
 
         self.endbutton=Button(realtimeFrame, text="end", command=lambda: self.pplot_thread(False,canvas,ax1,ax2))
-        self.endbutton.grid(row=0,column=1)
+        self.endbutton.grid(row=0,column=2)
 	
         ####### notebook layout #########
         nb.add(movePage, text='Move')
-        nb.add(page1, text='Az Scan')
+        nb.add(page1, text='Scan')
         nb.add(nb2, text='Track')
         nb.add(configPage,text='Configuration')
-	nb.add(realtimePage,text='Live Plot')
+	#nb.add(realtimePage,text='Live Plot')
         nb2.add(page2, text = 'Linear Scan')
         nb2.add(page3, text = 'Horizontal Scan')
 
@@ -750,6 +759,8 @@ class interface:
                    'Move to Location':{mtlabel1:self.az2.get(),mtlabel2:self.el2.get()},
                    'Az Scan':{'Scan Time':self.tscan.get(),'Iteration #':
                               self.iterations.get(),'El Step Size':self.deltaEl.get()},
+		   'Helical Scan':{'Scan Time':self.tscan2.get(),'min el':self.lim1.get(),
+				'max el':self.lim2.get()},
                    'Linear Scan':{'Celestial Object':celestialcoor_lin,
                                   'Az Scan #':self.numAzScans_lin.get(),
                                   'Min Az':self.MinAz_lin.get(),
@@ -784,6 +795,7 @@ class interface:
 
         if os.path.isfile(fname+'.txt')==True:
             print "LABEL EXISTS. Please change your label!"
+	    
         else:
             with open(fname+'.txt', 'w') as handle:
                 pickle.dump(data,handle)
@@ -833,6 +845,14 @@ class interface:
             self.iterations.insert(END,data['Az Scan']['Iteration #'])
             self.deltaEl.delete(0,'end')
             self.deltaEl.insert(END,data['Az Scan']['El Step Size'])
+	    
+            ##helical Scan
+            self.tscan2.delete(0,'end')
+            self.tscan2.insert(END,data['Helical Scan']['Scan Time'])
+            self.lim1.delete(0,'end')
+            self.lim1.insert(END,data['Helical Scan']['min el'])
+            self.lim2.delete(0,'end')
+            self.lim2.insert(END,data['Helical Scan']['max el'])
 
             ##Linear Scan
             celestialcoord_lin=data['Linear Scan']['Celestial Object']
@@ -1307,26 +1327,19 @@ class interface:
 	#clean the former plot
 	plt.clf()
 	canvas.show()
-	'''
-        c = ['r','b','g']  # plot marker colors
-        i = 0
-        #if self.plotting:
-        while self.plotting:
-            #ax.clear()         # clear axes from previous plot
-            theta = np.random.uniform(0,360,10)
-            r = np.random.uniform(0,1,10)
-            ax.plot(theta,r,linestyle="None",marker='o', color=c[i%3])
-            canvas.draw()
-            i += 1
-            time.sleep(1)
-	'''  
+
 	
 	# Device name as registered with the Windows driver.
 	dev=daqDevice('DaqBoard3031USB')
 	
 	chan = 1 # add this as arg later
 	# Input channel number.
-	channel = chan
+	chan = self.rtvar.get()
+	if len(chan) < 4:
+		channel = int(chan[-1])
+	else:
+		channel = int(chan[2:])
+	
 	if channel > 7:
 	    channel = 256 + channel - 8
 	    
@@ -1360,9 +1373,7 @@ class interface:
 	#set up signal matrix to add values to
 	z = np.zeros(len(x)*len(y))
 	sig = np.reshape(z, (len(y),len(x)))
-	
-	
-	
+	sig = ma.masked_where(sig == 0.0, sig)
 	
 	#start interactive plot
 	#plt.ion()
@@ -1373,7 +1384,7 @@ class interface:
 	#real time voltage
 	ax2=self.fig.add_subplot(2,1,2)
 	plt.xlabel('Time(s)')
-	plt.ylabel('Voltage')
+	plt.ylabel('chan %s, V' % chan)
 	plt.grid(True)
 	ax2.set_position([0.15, 0.11, 0.7, 0.3])
 	
@@ -1382,7 +1393,7 @@ class interface:
 	plt.axis([x.min(), x.max(), y.min(), y.max()])
 	plt.ylabel('Elevation (deg)')
 	plt.xlabel('Azimuth (deg)')
-	plt.title('voltage output for channel %d' % chan)
+	#plt.title('voltage output for channel %d' % chan)
 	
 	#time1 = gp.getAzEl()[2]
 	time1 = time.time()
@@ -1399,6 +1410,7 @@ class interface:
 		time2=time.time()
 		t=time2-time1
 		ax2.scatter(t,volts, c='b', marker='.')
+		#ax2.plot(t, volts, 'b-', linewidth = 2)
 		
 		
 		#get pointing information
@@ -1418,10 +1430,14 @@ class interface:
 		
 		#assign voltage value to az el position in matrix
 		sig[iel][iaz] = volts
+		with warnings.catch_warnings():
+			warnings.simplefilter("ignore")
+			sig.mask[iel][iaz] = False
+			sig[iel][iaz] = volts
 		
 		plt.pcolormesh(az, el, sig)
 		if i == 0:
-			plt.colorbar()
+			plt.colorbar(label = 'chan %s, V' % chan)
 			#plt.clim(-10., 10.)
 			#plt.clim(-2.0,0.0)
 			
@@ -1431,18 +1447,10 @@ class interface:
 		if i < 1:
 			i += 1
 			
-		time.sleep(0.01)
+			
+		#time.sleep(0.01)
 		
-		'''			
-		#ax.clear()         # clear axes from previous plot
-		theta = np.random.uniform(0,360,10)
-		r = np.random.uniform(0,1,10)
-		ax.plot(theta,r,linestyle="None",marker='o', color=c[i%3])
-		canvas.draw()
-		i += 1
-		time.sleep(1)
-		'''
-	path='D:/software_git_repos/greenpol/telescope_control/configurations/signalplot'
+	path='D:/software_git_repos/greenpol/telescope_control/data_aquisition/plots/live_plots'
 	os.chdir(path)
 	cwd=os.getcwd()
 	fname=str(time.strftime('%Y%m%d%H%M%S'))

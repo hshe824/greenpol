@@ -1,5 +1,46 @@
                                                                                                                      
 ######### things to do ##########
+
+
+## bugs
+
+
+code thinks elevation axis is done moving before it actually is
+
+
+galil and encoder position values loose sync with one another, this could propagate over time causing innacurate pointing (plot differences vs time/change in distance).
+
+stop button still doesnt work for horizontal scan (and possibly other things), it just goes to next loop iteration (I think)
+
+forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
+
+## more relavent:
+
+
+add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
+so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
+notebook tab)
+
+
+go through code and make sure comments are up to date and sufficiently descriptive
+
+
+add cryogenic feedback info, update after each file is produced, average over file
+
+incorporate peters notebook functions into gui
+
+
+figure out how to make real time 2d plot take average of values in the same bin (maybe create a list/dict for each bin that can be averaged)
+
+maybe put a save button on live plots so you only save them when you want to
+
+add channel drop down menu to live plots
+
+
+## less relevant
+
+add live plot channel drop down menu option to save/load configurations
+
 note that the precision on these scans is not perfect, figure 
 out what precision is required, i think its coming from rounding errors and conversion between cts and degrees.
 
@@ -15,8 +56,6 @@ figure out if there is a better way to convert az el coordinates outputted by ep
 put in logic that allows for different scan times at each elevation(scan.py: azScan())
 
 
-Think about how best to display ouput, and what output we want to display (gui related)
-
 figure out how to better adjust layout, its weird right now (gui related)
 
 why does the output frame only put text in the middle....?? (gui.py)
@@ -24,49 +63,7 @@ why does the output frame only put text in the middle....?? (gui.py)
 put in some logic to azScan to accept hours instead of seconds for tscan, maybe change the default to hours, then if input is less than one, have some logic to convert that to seconds, or maybe timdelta can just handle that. or have an option to do either and you have to specify at input, maybe a checkbox (scan.py, azScan)
 
 
-#create an error message text box in gui, for things like elevation safety controls
+create an error message text box in gui, for things like elevation safety controls
 
-set speed/accelaration as a variable in gui, save parameters to file
-
-
-have hardware safety parameters, stop, dont change el past a certain point
-
-galil commands that will never change (AC/DC) can be set at beginning of gui.py, rather than in each move function, so what is never going to change?
 
 get_pointing.py is set up to write files every minute, logic will need to change if we want files more frequently
-
-
-## bugs
-
-
-
-code thinks elevation axis is done moving before it actually is
-
-
-
-counts to degree conversion for elevation axis is not quite right, figure out the right value
-
-forward/backward pass # comments are incorrect, jumps from 1 to 3, figure out the right way to do this(scan.py: linearScan() & horizontalScan())
-
-galil and encoder position values loose sync with one another, this could propagate over time causing innacurate pointing.
-
-configuration update doesnt automatically update values such as move speed, we currently need to turn off gui and re-open
-
-## more relavent:
-
-
-add functionality to find offsets (arrow keys that step in some defined increment, update offset each time you move, 
-so when you find the correct pointing the offset is however much you have moved, maybe do this in a seperate 
-notebook tab)
-
-
-
-
-go through code and make sure comments are up to date and sufficiently descriptive
-
-make helical scan pattern option
-
-add cryogenic feedback info, update after each file is produced, average over file
-
-incorporate peters notebook functions into gui
-
