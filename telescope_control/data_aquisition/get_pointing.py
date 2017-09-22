@@ -36,7 +36,7 @@ def bin_to_int(bin_str):
 
 def fileStruct(n_array, data):
 
-	os.chdir("D:/software_git_repos/greenpol/telescope_control/data_aquisition")	
+	os.chdir("D:/software_git_repos/greenpol/telescope_control/data_aquisition/pointing_data")	
 	t=dt.datetime.now()
 	date = t.strftime("%m-%d-%Y")
 	time = t.strftime("%H-%M-%S")
@@ -119,7 +119,7 @@ a=offset(c)[2]
 if __name__=='__main__':
 	while True:
 		az, el, gpstime = getAzEl()
-		#print el
+		print az, el
 	
 '''	
 if __name__=='__main__':
