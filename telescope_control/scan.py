@@ -54,7 +54,7 @@ def linearScan(location, cbody, numAzScans, MinAz, MaxAz, c):
       print('%s az, el: ' % cbody, az, el)
 
       #keep telescope from pointing below horizon
-      if el < 0. or el > 180.:
+      if el < 0. or el > 90.:
 	print('Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % el)
 	return 
 
@@ -156,7 +156,7 @@ def horizontalScan(location, cbody, numAzScans, MinAz, MaxAz, MinEl, MaxEl, step
           return
 	  
 	#keep the telescope from pointing below the horizon
-        if el + MaxEl > 180.:
+        if el + MaxEl > 90.:
           print('Warning, %.2f deg max elevation is below the horizon, your going to break the telescope...' % (el + MaxEl))
           return
 
@@ -294,9 +294,9 @@ def azScan(tscan, iterations, deltaEl, c):
       P2El = ((float(c('TPY')) / degtoctsEl) + offsetEl) % 360.
       print('AZ:', P2AZ, 'Elev:', P2El)
       
-      if P2El + deltaEl < 0. or P2El + deltaEl > 180.:
+      if P2El + deltaEl < 0. or P2El + deltaEl > 90.:
 	      print 'Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % P2El + deltaEl
- 
+	      return
       #change elevation for next az scan
       if i < iterations - 1:
         print('changing elevation')
@@ -327,3 +327,105 @@ def azScan(tscan, iterations, deltaEl, c):
     
   return
    
+   
+def helicalScan(tscan, lim1, lim2, c):
+  
+  try:
+
+    c = c
+    
+    if lim1 < 0. or lim2 >  90.:
+        print 'Warning, %.2f deg elevation is below the horizon, your going to break the telescope...' % P2El + deltaEl
+        return
+	
+    #moving to starting elevation
+    print 'moving to starting elevation %f' % lim1
+    moveto.location(None, lim1, c)
+	
+    # deg to ct conversion for each motor
+    degtoctsAZ = config.degtoctsAZ
+    degtoctsEl = config.degtoctsEl
+
+    #offset between galil and beam
+    offsetAz = gp.galilAzOffset 
+    offsetEl = gp.galilElOffset
+    
+    #azimuth scan settings
+    azSP = config.azSP # az scan speed, 90 deg/sec
+    azAC = config.azAC # acceleration 
+    azDC = config.azDC # deceleration
+    
+    #gclib/galil commands to set az axis motor motion
+    c('JGA=' + str(azSP)) #speed, cts/sec
+    c('ACA=' + str(azAC)) #acceleration, cts/sec
+    c('DCA=' + str(azDC)) #deceleration, cts/sec
+    
+    #elevation settings
+    elevSP = config.elevSP # x degrees/sec
+    elevAC = config.elevAC # acceleration 
+    elevDC = config.elevDC # deceleration
+    elevD = (lim2 - lim1) * degtoctsEl # move elevation x degrees each iteration
+    
+    #gclib/galil commands to set az axis motor motion
+    c('SPB=' + str(elevSP)) #elevation speed
+    c('ACB=' + str(elevAC)) #acceleration, cts/sec
+    c('DCB=' + str(elevDC)) #deceleration, cts/sec
+    c('PRB=' + str(elevD))
+    
+
+    #initial position
+    #P1AZ = ((float(c('TPX')) / degtoctsAZ) + offsetAz) % 360. 
+    #P1El = ((float(c('TPY')) / degtoctsEl) + offsetEl) % 360.
+    #print('AZ:', P1AZ, 'Elev:', P1El)
+
+
+    #set start time
+    st = time.time()
+    #set current time to start time
+    ct = st
+    #duration of  scan
+    dt = tscan * 60.  # scan time in minutes
+
+    print(' Starting helical Scan')
+
+    c('BGA') #begin az motion
+    c('BGB') # begin el motion
+    
+
+    #scan in azimuth while current time < start time + duration
+    while ct < st + dt:
+	    
+	
+	if c('MG _SCB') == '1.0000':
+		elevD = -elevD
+		c('PRB=' + str(elevD))
+		c('BGB')
+	
+        #update current time
+	ct = time.time()
+
+	#if  az stops moving exit while loop
+	if c('MG _BGA') == '0.0000':
+	  return
+
+    c('STX') # stop when duration has passed
+    c('STY')
+
+    print(' done.')
+
+    #final position after each az scan
+    #P2AZ = ((float(c('TPX')) / degtoctsAZ) + offsetAz) % 360. 
+    #P2El = ((float(c('TPY')) / degtoctsEl) + offsetEl) % 360.
+    #print('AZ:', P2AZ, 'Elev:', P2El)
+
+    
+    
+    del c #delete the alias
+
+    ###########################################################################
+    # except handler
+    ###########################################################################  
+  except gclib.GclibError as e:
+      print('Unexpected GclibError:', e)
+
+  return
