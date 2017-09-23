@@ -30,11 +30,9 @@ add cryogenic feedback info, update after each file is produced, average over fi
 incorporate peters notebook functions into gui
 
 
-figure out how to make real time 2d plot take average of values in the same bin (maybe create a list/dict for each bin that can be averaged)
 
 maybe put a save button on live plots so you only save them when you want to
 
-add channel drop down menu to live plots
 
 
 ## less relevant
@@ -67,3 +65,17 @@ create an error message text box in gui, for things like elevation safety contro
 
 
 get_pointing.py is set up to write files every minute, logic will need to change if we want files more frequently
+
+
+
+
+## commit notes
+
+helical scan pattern added (scan.py)
+changed notebook tab az scan to scan (gui.py)
+added helical scan to save/load config (gui.py)
+changed layout so real time plots are to the right of notebook frame (gui.py)
+mask real time 2d color plot where there arent values (gui.py)
+changed where live plots are saved (gui.py)
+made a pointing_data folder (plot_path.py, get_pointing.py)
+added channel drop down menu for live plotting (gui.py) 

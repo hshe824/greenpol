@@ -561,7 +561,7 @@ class interface:
         self.alttxt = Text(outputframe2, height = 1, width = 15)
         self.alttxt.grid(row = 1, column = 1)
 
-        '''
+        
         #ra dec output
         self.lra = Label(outputframe2, text='ra')
         self.lra.grid(row = 0, column = 2, sticky = W)
@@ -581,18 +581,18 @@ class interface:
         self.laltG.grid(row = 1, column = 2, sticky = W)
         self.alttxtG = Text(outputframe2, height = 1, width = 15)
         self.alttxtG.grid(row = 1, column = 3)
-	
+	'''
         #thread stuff
         #self.interval = interval
         thread = threading.Thread(target=self.moniter, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start()  
         
-	
+	'''
         thread = threading.Thread(target=self.moniterGalil, args=())
         thread.daemon = True                            # Daemonize thread
         thread.start() 
-	
+	'''
         ########## plot data ##########
 
         self.outputframe3 = Frame(outputframe)
@@ -1061,10 +1061,10 @@ class interface:
                 self.alttxt.delete('1.0', END)
                 self.alttxt.insert('1.0', el)
 		
-		#self.ratxt.delete('1.0', END)
-		#self.ratxt.insert('1.0', ra)
-		#self.dectxt.delete('1.0', END)
-		#self.dectxt.insert('1.0', dec)		
+		self.ratxt.delete('1.0', END)
+		self.ratxt.insert('1.0', ra)
+		self.dectxt.delete('1.0', END)
+		self.dectxt.insert('1.0', dec)		
 
             if(delta>=int(write_time)): 
                 gp.fileStruct(Data.getData(), Data)
@@ -1375,6 +1375,10 @@ class interface:
 	sig = np.reshape(z, (len(y),len(x)))
 	sig = ma.masked_where(sig == 0.0, sig)
 	
+	#set up matrix for keeping track of data points in single bin for averaging
+	z2 = np.zeros(len(x)*len(y))
+	count = np.reshape(z2, (len(y), len(x)))
+	
 	#start interactive plot
 	#plt.ion()
 	
@@ -1428,22 +1432,33 @@ class interface:
 		iel = np.where(abs(el - EL) < epsilon)[0][0]
 		iaz = np.where(abs(az.T - AZ) < epsilon)[0][0]
 		
+		if count[iel][iaz] is ma.masked:
+			count.mask[iel][iaz] = False
+			
+		count[iel][iaz] += 1
+		
 		#assign voltage value to az el position in matrix
-		sig[iel][iaz] = volts
 		with warnings.catch_warnings():
 			warnings.simplefilter("ignore")
 			sig.mask[iel][iaz] = False
-			sig[iel][iaz] = volts
+			sig[iel][iaz] = sig[iel][iaz] + volts
+		#sig[iel][iaz] = sig[iel][iaz] + volts
 		
-		plt.pcolormesh(az, el, sig)
+		#take average of all data in one bin				
+		Z = sig/count
+				
+		plt.pcolormesh(az, el, Z)
 		if i == 0:
-			plt.colorbar(label = 'chan %s, V' % chan)
-			#plt.clim(-10., 10.)
-			#plt.clim(-2.0,0.0)
+			cb = plt.colorbar(label = 'chan %s, V' % chan)
+		else:
+			cb.remove()
+			cb = plt.colorbar(label = 'chan %s, V' % chan)
+			plt.clim(Z.min(), Z.max())
 			
-
+		#plt.clim(Z.min(), Z.max())
+		#print Z.min(), Z.max()
+			
 		canvas.draw()
-		
 		if i < 1:
 			i += 1
 			
